@@ -160,15 +160,43 @@ class LLMEvaluator:
             Optional[Dict[str, Any]]: 成功时返回分析结果，失败时返回None
         """
         try:
+            print("\n===== SAFE_ERROR_ANALYSIS 方法开始执行 =====\n")
+            
             # 格式化提示模板
+            print("正在格式化提示模板...")
             formatted_prompt = self.error_analysis_template.format(
                 problem_description=problem_description,
                 code=code,
                 test_results=test_results
             )
+            print("提示模板格式化完成.")
+            
+            # 打印 LLM 配置状态
+            print("\n===== LLM 配置信息 =====")
+            print(f"模型: {self.model_name}")
+            print(f"API基础URL: {llm_config.api_base}")
+            print(f"API密钥前5位: {llm_config.api_key[:5]}... (总长度: {len(llm_config.api_key)})")
+            print("=========================\n")
             
             # 调用API
-            analysis_result = await self._call_llm_api(formatted_prompt)
+            print("开始调用 LLM API...")
+            try:
+                analysis_result = await self._call_llm_api(formatted_prompt)
+                print("LLM API 调用成功完成.")
+            except Exception as api_err:
+                print(f"\n===== LLM API 调用时出错 =====\n")
+                print(f"错误类型: {type(api_err).__name__}")
+                print(f"错误信息: {str(api_err)}")
+                traceback.print_exc()
+                print("\n============================\n")
+                
+                # 构造一个模拟错误响应，便于调试
+                sample_error_result = {
+                    "error_types": ["API调用错误"],
+                    "explanation": f"API调用失败: {str(api_err)}",
+                    "error_details": [{"location": "API调用", "description": str(api_err)}]
+                }
+                return sample_error_result
             
             # 打印原始响应，帮助调试
             print("\n====== LLM原始响应(错误分析) ======")
@@ -180,13 +208,52 @@ class LLMEvaluator:
             print(repr(analysis_result))
             print("======================================\n")
             
-            # 解析结果
-            error_analysis = direct_json_parse(analysis_result)
-            print("错误分析解析成功")
-            return error_analysis
+            # 解析结果处理
+            print("开始解析 LLM 响应...")
+            try:
+                error_analysis = direct_json_parse(analysis_result)
+                print("错误分析解析成功! 返回的键:")
+                print(list(error_analysis.keys()))
+                return error_analysis
+            except KeyError as ke:
+                print(f"\n===== JSON解析中的KeyError =====\n")
+                print(f"KeyError: {str(ke)}")
+                print(f"尝试手动处理KeyError问题...")
+                
+                # 检查常见模式：\n "error_types"
+                if '\n "error_types"' in str(ke):
+                    print("检测到问题模式: '\\n \"error_types\"'")
+                    
+                    # 尝试手动解析JSON
+                    try:
+                        # 使用正则表达式或其他方法提取所需字段
+                        import re
+                        # 构造一个基本响应对象
+                        return {
+                            "error_types": ["解析错误"],
+                            "explanation": "LLM返回了格式不正确的JSON",
+                            "error_details": [{
+                                "location": "JSON解析", 
+                                "description": "键名包含前导空格和换行符"
+                            }]
+                        }
+                    except Exception as manual_err:
+                        print(f"手动解析也失败: {str(manual_err)}")
+            except Exception as parse_err:
+                print(f"\n===== JSON解析错误 =====\n")
+                print(f"错误类型: {type(parse_err).__name__}")
+                print(f"错误信息: {str(parse_err)}")
+                traceback.print_exc()
         except Exception as e:
-            print(f"错误分析失败: {type(e).__name__}: {str(e)}")
-            return None
+            print(f"\n===== 错误分析总体失败 =====\n")
+            print(f"错误类型: {type(e).__name__}")
+            print(f"错误信息: {str(e)}")
+            traceback.print_exc()
+            print("\n===========================\n")
+        
+        # 如果执行到这里，说明所有尝试都失败了
+        print("所有错误分析尝试都失败，返回None")
+        return None
     
     async def _safe_improvement_analysis(
             self, 
