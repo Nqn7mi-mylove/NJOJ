@@ -120,7 +120,24 @@ async def read_submissions(
         query["user_id"] = user_id
     
     if problem_id:
-        query["problem_id"] = problem_id
+        # 尝试先使用problem_id直接查询
+        # 如果problem_id是自定义ID，需要先查找对应的系统ID
+        try:
+            # 尝试使用系统ID直接查询
+            if ObjectId.is_valid(problem_id):
+                query["problem_id"] = problem_id
+            else:
+                # 如果不是有效的ObjectId，则可能是自定义ID
+                problems_collection = db.db.problems
+                problem = await problems_collection.find_one({"custom_id": problem_id})
+                if problem:
+                    query["problem_id"] = str(problem["_id"])
+                else:
+                    # 如果找不到对应问题，使用一个不可能匹配的ID
+                    query["problem_id"] = "no_such_problem"
+        except:
+            # 如果出错，使用原始ID查询
+            query["problem_id"] = problem_id
     
     if status:
         query["status"] = status
