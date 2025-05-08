@@ -21,6 +21,6 @@ export default {
   padding: 10px 0;
   color: #909399;
   font-size: 13px;
-  border-top: 1px solid #eaeaea;
+  /* 移除边框线 */
 }
 </style>

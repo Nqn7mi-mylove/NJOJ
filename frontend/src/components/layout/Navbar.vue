@@ -3,7 +3,7 @@
     <div class="left-section">
       <div class="logo-container">
         <router-link to="/">
-          <h1 class="logo">在线评测系统</h1>
+          <h1 class="logo">NJOJ</h1>
         </router-link>
       </div>
       <div class="nav-links">

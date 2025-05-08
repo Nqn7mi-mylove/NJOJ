@@ -7,9 +7,10 @@
       <el-main>
         <router-view />
       </el-main>
-      <el-footer>
+      <!-- 隐藏页脚以移除白条 -->
+      <!-- <el-footer>
         <Footer />
-      </el-footer>
+      </el-footer> -->
     </el-container>
   </div>
 </template>
@@ -49,6 +50,8 @@ html, body {
   display: flex;
   flex-direction: column;
   flex: 1;
+  min-height: 100vh;
+  position: relative;
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;

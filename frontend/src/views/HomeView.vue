@@ -1,8 +1,8 @@
 <template>
   <div class="home">
     <div class="hero">
-      <h1>在线评测系统</h1>
-      <p>通过解决编程问题提高您的编程技能</p>
+      <h1>NJOJ</h1>
+      <p>创新的智能在线判题系统，支持AI评价功能</p>
       <div class="action-buttons">
         <el-button type="primary" size="large" @click="$router.push('/problems')">
           开始编程
@@ -13,58 +13,9 @@
       </div>
     </div>
 
-    <div class="features">
-      <h2>特色功能</h2>
-      <div class="feature-grid">
-        <div class="feature-card">
-          <el-icon><Document /></el-icon>
-          <h3>题目库</h3>
-          <p>访问不断增长的编程题目集合，支持Markdown格式</p>
-        </div>
-        <div class="feature-card">
-          <el-icon><Edit /></el-icon>
-          <h3>VS Code风格编辑器</h3>
-          <p>使用我们内置的VS Code风格编辑器解决问题</p>
-        </div>
-        <div class="feature-card">
-          <el-icon><Cpu /></el-icon>
-          <h3>代码评测</h3>
-          <p>提交代码并即时获得解决方案的反馈</p>
-        </div>
-        <div class="feature-card">
-          <el-icon><Trophy /></el-icon>
-          <h3>进度跟踪</h3>
-          <p>监控您的进度并提高解决问题的能力</p>
-        </div>
-      </div>
-    </div>
 
-    <div class="recent-problems">
-      <h2>最新题目</h2>
-      <el-table :data="recentProblems" style="width: 100%">
-        <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column prop="title" label="标题">
-          <template #default="scope">
-            <router-link :to="`/problems/${scope.row.id}`">{{ scope.row.title }}</router-link>
-          </template>
-        </el-table-column>
-        <el-table-column prop="difficulty" label="难度" width="120">
-          <template #default="scope">
-            <el-tag :type="getDifficultyType(scope.row.difficulty)">
-              {{ getChineseDifficulty(scope.row.difficulty) }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="通过率" width="120">
-          <template #default="scope">
-            {{ calculateAcceptanceRate(scope.row) }}%
-          </template>
-        </el-table-column>
-      </el-table>
-      <div class="view-all">
-        <el-button type="text" @click="$router.push('/problems')">查看所有题目</el-button>
-      </div>
-    </div>
+
+
   </div>
 </template>
 
@@ -122,24 +73,40 @@ export default {
 .home {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: calc(100vh - 120px); /* 固定高度以防止滚动 */
+  overflow: hidden;
 }
 
 .hero {
   text-align: center;
-  margin: 40px 0 60px;
+  padding: 40px 0;
+  width: 100%;
+  max-width: 800px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .hero h1 {
-  font-size: 3rem;
+  font-size: 4rem;
   color: #409EFF;
-  margin-bottom: 10px;
+  margin-bottom: 20px;
+  font-weight: 700;
+  letter-spacing: 1px;
 }
 
 .hero p {
-  font-size: 1.2rem;
+  font-size: 1.4rem;
   color: #606266;
-  margin-bottom: 30px;
+  margin-bottom: 40px;
+  max-width: 80%;
+  line-height: 1.6;
 }
 
 .action-buttons {
