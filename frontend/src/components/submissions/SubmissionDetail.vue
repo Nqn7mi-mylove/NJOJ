@@ -233,9 +233,7 @@
           </div>
         </template>
         
-        <div v-if="submission.llm_evaluation.error" class="llm-error">
-          <p>{{ submission.llm_evaluation.error }}</p>
-        </div>
+        <!-- 已移除LLM错误显示元素 -->
       </div>
     </div>
   </div>
@@ -545,9 +543,7 @@ h4 {
   border-bottom: none;
 }
 
-.llm-error {
-  margin-bottom: 20px;
-}
+/* 已移除LLM错误元素的CSS样式 */
 
 .error-analysis {
   margin-bottom: 25px;
