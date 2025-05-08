@@ -8,8 +8,8 @@
             {{ problem.difficulty }}
           </el-tag>
           <span class="problem-stats">
-            Submissions: {{ problem.submission_count }} | 
-            Acceptance: {{ calculateAcceptanceRate(problem) }}%
+            提交数：{{ problem.submission_count }} | 
+            通过率：{{ calculateAcceptanceRate(problem) }}%
           </span>
           <div class="problem-tags">
             <el-tag 
@@ -26,12 +26,12 @@
       </div>
 
       <el-tabs v-model="activeTab" class="problem-tabs">
-        <el-tab-pane label="Description" name="description">
+        <el-tab-pane label="题目描述" name="description">
           <div class="problem-description">
             <MarkdownRenderer :content="problem.description" />
           </div>
         </el-tab-pane>
-        <el-tab-pane label="Submissions" name="submissions" v-if="isLoggedIn">
+        <el-tab-pane label="提交记录" name="submissions" v-if="isLoggedIn">
           <div class="submissions-list">
             <el-table 
               :data="problemSubmissions" 
@@ -39,52 +39,52 @@
               v-loading="submissionsLoading"
             >
               <!-- ID列已被移除，以简化界面显示 -->
-              <el-table-column label="Status" width="150">
+              <el-table-column label="状态" width="150">
                 <template #default="scope">
                   <el-tag :type="getStatusType(scope.row.status)">
                     {{ formatStatus(scope.row.status) }}
                   </el-tag>
                 </template>
               </el-table-column>
-              <el-table-column label="Language" width="100">
+              <el-table-column label="语言" width="100">
                 <template #default="scope">
                   {{ scope.row.language }}
                 </template>
               </el-table-column>
-              <el-table-column label="Time" width="120">
+              <el-table-column label="耗时" width="120">
                 <template #default="scope">
                   {{ scope.row.time_used }} ms
                 </template>
               </el-table-column>
-              <el-table-column label="Memory" width="120">
+              <el-table-column label="内存" width="120">
                 <template #default="scope">
                   {{ scope.row.memory_used }} KB
                 </template>
               </el-table-column>
-              <el-table-column label="Submitted At" width="180">
+              <el-table-column label="提交时间" width="180">
                 <template #default="scope">
                   {{ formatDate(scope.row.submitted_at) }}
                 </template>
               </el-table-column>
-              <el-table-column label="Actions" width="120">
+              <el-table-column label="操作" width="120">
                 <template #default="scope">
                   <el-button 
                     size="small" 
                     type="primary" 
                     @click="viewSubmission(scope.row.id)"
                   >
-                    View
+                    查看
                   </el-button>
                 </template>
               </el-table-column>
             </el-table>
           </div>
         </el-tab-pane>
-        <el-tab-pane label="Submit" name="submit" v-if="isLoggedIn">
+        <el-tab-pane label="提交代码" name="submit" v-if="isLoggedIn">
           <div class="submission-form">
             <div class="language-select">
-              <span>Language:</span>
-              <el-select v-model="submission.language" placeholder="Select Language">
+              <span>编程语言：</span>
+              <el-select v-model="submission.language" placeholder="选择编程语言">
                 <el-option label="C++" value="cpp" />
               </el-select>
             </div>
@@ -100,11 +100,11 @@
             
             <div class="submission-actions">
               <el-button type="primary" @click="submitSolution" :loading="submitting">
-                Submit
+                提交
               </el-button>
-              <el-button @click="resetEditor">Reset</el-button>
+              <el-button @click="resetEditor">重置</el-button>
               <el-button type="text" @click="toggleEditorTheme">
-                Toggle Theme
+                切换主题
               </el-button>
             </div>
           </div>
@@ -113,7 +113,7 @@
 
       <el-dialog
         v-model="showSubmissionDialog"
-        title="Submission Details"
+        title="提交详情"
         width="80%"
         class="submission-dialog"
       >
@@ -124,10 +124,10 @@
       </el-dialog>
     </div>
     <div v-else-if="!isLoading" class="not-found">
-      <h2>Problem not found</h2>
-      <p>The problem you're looking for doesn't exist or you don't have permission to view it.</p>
+      <h2>未找到题目</h2>
+      <p>您要查找的题目不存在或您没有权限查看。</p>
       <el-button type="primary" @click="$router.push('/problems')">
-        Back to Problems
+        返回题目列表
       </el-button>
     </div>
   </div>
@@ -150,7 +150,7 @@ export default {
     return {
       activeTab: 'description',
       submission: {
-        code: '// Your C++ solution here\n\n#include <iostream>\nusing namespace std;\n\nint main() {\n    // Write your code here\n    \n    return 0;\n}',
+        code: '// 在此处写下C++解答\n\n#include <iostream>\nusing namespace std;\n\nint main() {\n    // 在此处编写代码\n    \n    return 0;\n}',
         language: 'cpp'
       },
       editorTheme: 'vs',
@@ -218,15 +218,15 @@ export default {
     },
     formatStatus(status) {
       const formatted = {
-        accepted: 'Accepted',
-        wrong_answer: 'Wrong Answer',
-        time_limit_exceeded: 'Time Limit Exceeded',
-        memory_limit_exceeded: 'Memory Limit Exceeded',
-        runtime_error: 'Runtime Error',
-        compilation_error: 'Compilation Error',
-        pending: 'Pending',
-        judging: 'Judging',
-        system_error: 'System Error'
+        accepted: '通过',
+        wrong_answer: '答案错误',
+        time_limit_exceeded: '超时',
+        memory_limit_exceeded: '内存超限',
+        runtime_error: '运行时错误',
+        compilation_error: '编译错误',
+        pending: '等待中',
+        judging: '评判中',
+        system_error: '系统错误'
       }
       return formatted[status] || status
     },
@@ -248,11 +248,11 @@ export default {
       this.editorTheme = this.editorTheme === 'vs' ? 'vs-dark' : 'vs'
     },
     resetEditor() {
-      this.submission.code = '// Your C++ solution here\n\n#include <iostream>\nusing namespace std;\n\nint main() {\n    // Write your code here\n    \n    return 0;\n}'
+      this.submission.code = '// 在此处写下C++解答\n\n#include <iostream>\nusing namespace std;\n\nint main() {\n    // 在此处编写代码\n    \n    return 0;\n}'
     },
     async submitSolution() {
       if (!this.isLoggedIn) {
-        this.$message.warning('Please log in to submit a solution')
+        this.$message.warning('请登录后提交解答')
         this.$router.push('/login')
         return
       }
@@ -267,7 +267,7 @@ export default {
         })
         
         if (result) {
-          this.$message.success('Solution submitted successfully')
+          this.$message.success('解答提交成功')
           
           // Poll for submission status
           await this.pollSubmissionStatus(result.id)
@@ -279,7 +279,7 @@ export default {
           this.activeTab = 'submissions'
         }
       } catch (error) {
-        this.$message.error('Failed to submit solution')
+        this.$message.error('提交解答失败')
         console.error(error)
       } finally {
         this.submitting = false

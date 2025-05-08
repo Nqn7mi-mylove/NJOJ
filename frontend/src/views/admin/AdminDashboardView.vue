@@ -1,19 +1,19 @@
 <template>
   <div class="admin-dashboard">
-    <h1>Admin Dashboard</h1>
+    <h1>管理员控制台</h1>
     
     <el-row :gutter="20">
       <el-col :span="8">
         <el-card class="dashboard-card">
           <template #header>
             <div class="card-header">
-              <span>Problems</span>
-              <el-button type="primary" @click="$router.push('/admin/problems')">Manage</el-button>
+              <span>题目</span>
+              <el-button type="primary" @click="$router.push('/admin/problems')">管理</el-button>
             </div>
           </template>
           <div class="card-content">
             <div class="stat-value">{{ stats.problemCount }}</div>
-            <div class="stat-label">Total Problems</div>
+            <div class="stat-label">题目总数</div>
           </div>
         </el-card>
       </el-col>
@@ -22,13 +22,13 @@
         <el-card class="dashboard-card">
           <template #header>
             <div class="card-header">
-              <span>Users</span>
-              <el-button type="primary" disabled>Manage</el-button>
+              <span>用户</span>
+              <el-button type="primary" disabled>管理</el-button>
             </div>
           </template>
           <div class="card-content">
             <div class="stat-value">{{ stats.userCount }}</div>
-            <div class="stat-label">Registered Users</div>
+            <div class="stat-label">注册用户数</div>
           </div>
         </el-card>
       </el-col>
@@ -37,13 +37,13 @@
         <el-card class="dashboard-card">
           <template #header>
             <div class="card-header">
-              <span>Submissions</span>
-              <el-button type="primary" disabled>Manage</el-button>
+              <span>提交记录</span>
+              <el-button type="primary" disabled>管理</el-button>
             </div>
           </template>
           <div class="card-content">
             <div class="stat-value">{{ stats.submissionCount }}</div>
-            <div class="stat-label">Total Submissions</div>
+            <div class="stat-label">提交总数</div>
           </div>
         </el-card>
       </el-col>
@@ -66,48 +66,48 @@
         <el-card class="recent-submissions">
           <template #header>
             <div class="card-header">
-              <span>Recent Submissions</span>
+              <span>最近提交</span>
             </div>
           </template>
           <el-table :data="recentSubmissions" v-loading="loading">
             <el-table-column prop="id" label="ID" width="80" />
-            <el-table-column label="Problem" width="250">
+            <el-table-column label="题目" width="250">
               <template #default="scope">
                 <router-link :to="`/problems/${scope.row.problem_id}`">
                   {{ getProblemTitle(scope.row.problem_id) }}
                 </router-link>
               </template>
             </el-table-column>
-            <el-table-column label="User" width="150">
+            <el-table-column label="用户" width="150">
               <template #default="scope">
                 {{ getUserName(scope.row.user_id) }}
               </template>
             </el-table-column>
-            <el-table-column label="Status" width="150">
+            <el-table-column label="状态" width="150">
               <template #default="scope">
                 <el-tag :type="getStatusType(scope.row.status)">
                   {{ formatStatus(scope.row.status) }}
                 </el-tag>
               </template>
             </el-table-column>
-            <el-table-column label="Language" width="100">
+            <el-table-column label="语言" width="100">
               <template #default="scope">
                 {{ scope.row.language }}
               </template>
             </el-table-column>
-            <el-table-column label="Submitted At" width="180">
+            <el-table-column label="提交时间" width="180">
               <template #default="scope">
                 {{ formatDate(scope.row.submitted_at) }}
               </template>
             </el-table-column>
-            <el-table-column label="Actions" width="120">
+            <el-table-column label="操作" width="120">
               <template #default="scope">
                 <el-button 
                   size="small" 
                   type="primary" 
                   @click="viewSubmission(scope.row.id)"
                 >
-                  View
+                  查看
                 </el-button>
               </template>
             </el-table-column>
@@ -169,7 +169,7 @@ export default {
         await this.loadUserDetails()
       } catch (error) {
         console.error('Error fetching dashboard stats', error)
-        this.setError('Failed to load dashboard statistics')
+        this.setError('加载控制台统计信息失败')
       } finally {
         this.loading = false
       }
@@ -222,15 +222,15 @@ export default {
     },
     formatStatus(status) {
       const formatted = {
-        accepted: 'Accepted',
-        wrong_answer: 'Wrong Answer',
-        time_limit_exceeded: 'Time Limit Exceeded',
-        memory_limit_exceeded: 'Memory Limit Exceeded',
-        runtime_error: 'Runtime Error',
-        compilation_error: 'Compilation Error',
-        pending: 'Pending',
-        judging: 'Judging',
-        system_error: 'System Error'
+        accepted: '通过',
+        wrong_answer: '答案错误',
+        time_limit_exceeded: '超时',
+        memory_limit_exceeded: '内存超限',
+        runtime_error: '运行时错误',
+        compilation_error: '编译错误',
+        pending: '等待中',
+        judging: '评判中',
+        system_error: '系统错误'
       }
       return formatted[status] || status
     },

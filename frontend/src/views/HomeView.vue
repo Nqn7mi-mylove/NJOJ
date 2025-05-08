@@ -1,68 +1,68 @@
 <template>
   <div class="home">
     <div class="hero">
-      <h1>Online Judge System</h1>
-      <p>Improve your coding skills by solving programming problems</p>
+      <h1>在线评测系统</h1>
+      <p>通过解决编程问题提高您的编程技能</p>
       <div class="action-buttons">
         <el-button type="primary" size="large" @click="$router.push('/problems')">
-          Start Coding
+          开始编程
         </el-button>
         <el-button v-if="!isLoggedIn" size="large" @click="$router.push('/signup')">
-          Sign Up
+          注册账号
         </el-button>
       </div>
     </div>
 
     <div class="features">
-      <h2>Features</h2>
+      <h2>特色功能</h2>
       <div class="feature-grid">
         <div class="feature-card">
           <el-icon><Document /></el-icon>
-          <h3>Problem Bank</h3>
-          <p>Access a growing collection of programming problems with markdown support</p>
+          <h3>题目库</h3>
+          <p>访问不断增长的编程题目集合，支持Markdown格式</p>
         </div>
         <div class="feature-card">
           <el-icon><Edit /></el-icon>
-          <h3>VS Code Editor</h3>
-          <p>Solve problems using our embedded VS Code-style editor</p>
+          <h3>VS Code风格编辑器</h3>
+          <p>使用我们内置的VS Code风格编辑器解决问题</p>
         </div>
         <div class="feature-card">
           <el-icon><Cpu /></el-icon>
-          <h3>Code Evaluation</h3>
-          <p>Submit your code and get instant feedback on your solution</p>
+          <h3>代码评测</h3>
+          <p>提交代码并即时获得解决方案的反馈</p>
         </div>
         <div class="feature-card">
           <el-icon><Trophy /></el-icon>
-          <h3>Track Progress</h3>
-          <p>Monitor your progress and improve your problem-solving skills</p>
+          <h3>进度跟踪</h3>
+          <p>监控您的进度并提高解决问题的能力</p>
         </div>
       </div>
     </div>
 
     <div class="recent-problems">
-      <h2>Recent Problems</h2>
+      <h2>最新题目</h2>
       <el-table :data="recentProblems" style="width: 100%">
         <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column prop="title" label="Title">
+        <el-table-column prop="title" label="标题">
           <template #default="scope">
             <router-link :to="`/problems/${scope.row.id}`">{{ scope.row.title }}</router-link>
           </template>
         </el-table-column>
-        <el-table-column prop="difficulty" label="Difficulty" width="120">
+        <el-table-column prop="difficulty" label="难度" width="120">
           <template #default="scope">
             <el-tag :type="getDifficultyType(scope.row.difficulty)">
-              {{ scope.row.difficulty }}
+              {{ getChineseDifficulty(scope.row.difficulty) }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="Acceptance" width="120">
+        <el-table-column label="通过率" width="120">
           <template #default="scope">
             {{ calculateAcceptanceRate(scope.row) }}%
           </template>
         </el-table-column>
       </el-table>
       <div class="view-all">
-        <el-button type="text" @click="$router.push('/problems')">View All Problems</el-button>
+        <el-button type="text" @click="$router.push('/problems')">查看所有题目</el-button>
       </div>
     </div>
   </div>
@@ -98,6 +98,14 @@ export default {
         hard: 'danger'
       }
       return types[difficulty] || 'info'
+    },
+    getChineseDifficulty(difficulty) {
+      const difficultyMap = {
+        easy: '简单',
+        medium: '中等',
+        hard: '困难'
+      }
+      return difficultyMap[difficulty] || difficulty
     },
     calculateAcceptanceRate(problem) {
       if (!problem.submission_count) return 0

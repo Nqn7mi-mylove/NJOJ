@@ -1,10 +1,10 @@
 <template>
   <div class="profile-view">
-    <h1>My Profile</h1>
+    <h1>我的个人资料</h1>
     
     <div class="profile-container" v-loading="loading">
       <el-tabs v-model="activeTab">
-        <el-tab-pane label="Profile Information" name="profile">
+        <el-tab-pane label="资料信息" name="profile">
           <el-form
             ref="profileForm"
             :model="formData"
@@ -12,27 +12,27 @@
             label-position="top"
             class="profile-form"
           >
-            <el-form-item label="Username" prop="username">
+            <el-form-item label="用户名" prop="username">
               <el-input v-model="formData.username" disabled></el-input>
             </el-form-item>
             
-            <el-form-item label="Email" prop="email">
+            <el-form-item label="电子邮箱" prop="email">
               <el-input v-model="formData.email" type="email"></el-input>
             </el-form-item>
             
-            <el-form-item label="Full Name" prop="full_name">
+            <el-form-item label="姓名" prop="full_name">
               <el-input v-model="formData.full_name"></el-input>
             </el-form-item>
             
             <el-form-item>
               <el-button type="primary" @click="updateProfile" :loading="updating">
-                Update Profile
+                更新资料
               </el-button>
             </el-form-item>
           </el-form>
         </el-tab-pane>
         
-        <el-tab-pane label="Change Password" name="password">
+        <el-tab-pane label="修改密码" name="password">
           <el-form
             ref="passwordForm"
             :model="passwordData"
@@ -40,7 +40,7 @@
             label-position="top"
             class="password-form"
           >
-            <el-form-item label="Current Password" prop="current_password">
+            <el-form-item label="当前密码" prop="current_password">
               <el-input
                 v-model="passwordData.current_password"
                 type="password"
@@ -48,7 +48,7 @@
               ></el-input>
             </el-form-item>
             
-            <el-form-item label="New Password" prop="new_password">
+            <el-form-item label="新密码" prop="new_password">
               <el-input
                 v-model="passwordData.new_password"
                 type="password"
@@ -56,7 +56,7 @@
               ></el-input>
             </el-form-item>
             
-            <el-form-item label="Confirm New Password" prop="confirm_password">
+            <el-form-item label="确认新密码" prop="confirm_password">
               <el-input
                 v-model="passwordData.confirm_password"
                 type="password"
@@ -66,38 +66,38 @@
             
             <el-form-item>
               <el-button type="primary" @click="changePassword" :loading="changingPassword">
-                Change Password
+                修改密码
               </el-button>
             </el-form-item>
           </el-form>
         </el-tab-pane>
         
-        <el-tab-pane label="Solved Problems" name="solved">
+        <el-tab-pane label="已解决题目" name="solved">
           <div class="solved-problems">
             <div v-if="solvedProblems.length === 0" class="empty-state">
-              <p>You haven't solved any problems yet.</p>
+              <p>您还没有解决任何题目。</p>
               <el-button type="primary" @click="$router.push('/problems')">
-                Browse Problems
+                浏览题目
               </el-button>
             </div>
             
             <el-table v-else :data="solvedProblems">
               <el-table-column prop="id" label="ID" width="80" />
-              <el-table-column prop="title" label="Title">
+              <el-table-column prop="title" label="题目">
                 <template #default="scope">
                   <router-link :to="`/problems/${scope.row.id}`">
                     {{ scope.row.title }}
                   </router-link>
                 </template>
               </el-table-column>
-              <el-table-column prop="difficulty" label="Difficulty" width="120">
+              <el-table-column prop="difficulty" label="难度" width="120">
                 <template #default="scope">
                   <el-tag :type="getDifficultyType(scope.row.difficulty)">
-                    {{ scope.row.difficulty }}
+                    {{ getChineseDifficulty(scope.row.difficulty) }}
                   </el-tag>
                 </template>
               </el-table-column>
-              <el-table-column label="Tags" width="220">
+              <el-table-column label="标签" width="220">
                 <template #default="scope">
                   <div class="tag-container">
                     <el-tag 
@@ -107,7 +107,7 @@
                       effect="plain"
                       class="tag-item"
                     >
-                      {{ tag }}
+                      {{ getChineseTag(tag) }}
                     </el-tag>
                   </div>
                 </template>
@@ -130,7 +130,7 @@ export default {
     // Custom validator to check if passwords match
     const validatePasswordMatch = (rule, value, callback) => {
       if (value !== this.passwordData.new_password) {
-        callback(new Error('Passwords do not match'))
+        callback(new Error('密码不匹配'))
       } else {
         callback()
       }
@@ -150,23 +150,23 @@ export default {
       },
       rules: {
         email: [
-          { required: true, message: 'Please enter your email', trigger: 'blur' },
-          { type: 'email', message: 'Please enter a valid email address', trigger: 'blur' }
+          { required: true, message: '请输入您的电子邮箱', trigger: 'blur' },
+          { type: 'email', message: '请输入有效的电子邮箱地址', trigger: 'blur' }
         ],
         full_name: [
-          { required: true, message: 'Please enter your full name', trigger: 'blur' }
+          { required: true, message: '请输入您的姓名', trigger: 'blur' }
         ]
       },
       passwordRules: {
         current_password: [
-          { required: true, message: 'Please enter your current password', trigger: 'blur' }
+          { required: true, message: '请输入您的当前密码', trigger: 'blur' }
         ],
         new_password: [
-          { required: true, message: 'Please enter a new password', trigger: 'blur' },
-          { min: 6, message: 'Password must be at least 6 characters', trigger: 'blur' }
+          { required: true, message: '请输入新密码', trigger: 'blur' },
+          { min: 6, message: '密码必须至少为6个字符', trigger: 'blur' }
         ],
         confirm_password: [
-          { required: true, message: 'Please confirm your new password', trigger: 'blur' },
+          { required: true, message: '请确认您的新密码', trigger: 'blur' },
           { validator: validatePasswordMatch, trigger: 'blur' }
         ]
       },
@@ -220,7 +220,7 @@ export default {
         }
       } catch (error) {
         console.error('Error loading solved problems', error)
-        this.setError('Failed to load solved problems')
+        this.setError('加载已解决题目失败')
       } finally {
         this.loading = false
       }
@@ -239,9 +239,9 @@ export default {
         })
         
         if (success) {
-          this.$message.success('Profile updated successfully')
+          this.$message.success('个人资料更新成功')
         } else {
-          this.$message.error('Failed to update profile')
+          this.$message.error('更新个人资料失败')
         }
       } catch (error) {
         // Form validation failed
@@ -264,7 +264,7 @@ export default {
             new_password: this.passwordData.new_password
           })
           
-          this.$message.success('Password changed successfully')
+          this.$message.success('密码修改成功')
           
           // Reset the form
           this.passwordData = {
@@ -274,7 +274,7 @@ export default {
           }
         } catch (error) {
           console.error('Error changing password', error)
-          this.setError(error.response?.data?.detail || 'Failed to change password')
+          this.setError(error.response?.data?.detail || '修改密码失败')
         }
       } catch (error) {
         // Form validation failed
@@ -290,6 +290,31 @@ export default {
         hard: 'danger'
       }
       return types[difficulty] || 'info'
+    },
+    getChineseDifficulty(difficulty) {
+      const difficultyMap = {
+        easy: '简单',
+        medium: '中等',
+        hard: '困难'
+      }
+      return difficultyMap[difficulty] || difficulty
+    },
+    getChineseTag(tag) {
+      const tagMap = {
+        'array': '数组',
+        'string': '字符串',
+        'hash-table': '哈希表',
+        'dynamic-programming': '动态规划',
+        'math': '数学',
+        'sorting': '排序',
+        'greedy': '贪心算法',
+        'depth-first-search': '深度优先搜索',
+        'binary-search': '二分搜索',
+        'tree': '树',
+        'graph': '图',
+        'breadth-first-search': '广度优先搜索'
+      }
+      return tagMap[tag] || tag
     }
   },
   mounted() {

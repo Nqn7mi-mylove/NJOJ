@@ -1,26 +1,26 @@
 <template>
   <div class="problem-list">
-    <h1>Problem List</h1>
+    <h1>题目列表</h1>
     
     <div class="filters">
       <el-form :inline="true" class="filter-form">
-        <el-form-item label="Difficulty">
-          <el-select v-model="filters.difficulty" placeholder="All Difficulties" clearable>
-            <el-option label="Easy" value="easy" />
-            <el-option label="Medium" value="medium" />
-            <el-option label="Hard" value="hard" />
+        <el-form-item label="难度">
+          <el-select v-model="filters.difficulty" placeholder="所有难度" clearable>
+            <el-option label="简单" value="easy" />
+            <el-option label="中等" value="medium" />
+            <el-option label="困难" value="hard" />
           </el-select>
         </el-form-item>
         
-        <el-form-item label="Tags">
-          <el-select v-model="filters.tags" multiple placeholder="Select Tags" clearable>
-            <el-option v-for="tag in availableTags" :key="tag" :label="tag" :value="tag" />
+        <el-form-item label="标签">
+          <el-select v-model="filters.tags" multiple placeholder="选择标签" clearable>
+            <el-option v-for="tag in availableTags" :key="tag" :label="getChineseTag(tag)" :value="tag" />
           </el-select>
         </el-form-item>
         
         <el-form-item>
-          <el-button type="primary" @click="applyFilters">Filter</el-button>
-          <el-button @click="resetFilters">Reset</el-button>
+          <el-button type="primary" @click="applyFilters">筛选</el-button>
+          <el-button @click="resetFilters">重置</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -31,19 +31,19 @@
       v-loading="loading"
     >
       <el-table-column prop="custom_id" label="ID" width="80" />
-      <el-table-column prop="title" label="Title">
+      <el-table-column prop="title" label="标题">
         <template #default="scope">
           <router-link :to="`/problems/${scope.row.custom_id}`">{{ scope.row.title }}</router-link>
         </template>
       </el-table-column>
-      <el-table-column prop="difficulty" label="Difficulty" width="120">
+      <el-table-column prop="difficulty" label="难度" width="120">
         <template #default="scope">
           <el-tag :type="getDifficultyType(scope.row.difficulty)">
-            {{ scope.row.difficulty }}
+            {{ getChineseDifficulty(scope.row.difficulty) }}
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="Tags" width="220">
+      <el-table-column label="标签" width="220">
         <template #default="scope">
           <div class="tag-container">
             <el-tag 
@@ -53,20 +53,20 @@
               effect="plain"
               class="tag-item"
             >
-              {{ tag }}
+              {{ getChineseTag(tag) }}
             </el-tag>
           </div>
         </template>
       </el-table-column>
-      <el-table-column label="Acceptance" width="120">
+      <el-table-column label="通过率" width="120">
         <template #default="scope">
           {{ calculateAcceptanceRate(scope.row) }}%
         </template>
       </el-table-column>
-      <el-table-column label="Status" width="120">
+      <el-table-column label="状态" width="120">
         <template #default="scope">
-          <el-tag v-if="isSolved(scope.row.id)" type="success">Solved</el-tag>
-          <el-tag v-else type="info">Unsolved</el-tag>
+          <el-tag v-if="isSolved(scope.row.id)" type="success">已解决</el-tag>
+          <el-tag v-else type="info">未解决</el-tag>
         </template>
       </el-table-column>
     </el-table>
@@ -156,6 +156,31 @@ export default {
     calculateAcceptanceRate(problem) {
       if (!problem.submission_count) return 0
       return Math.round((problem.accepted_count / problem.submission_count) * 100)
+    },
+    getChineseDifficulty(difficulty) {
+      const difficultyMap = {
+        easy: '简单',
+        medium: '中等',
+        hard: '困难'
+      }
+      return difficultyMap[difficulty] || difficulty
+    },
+    getChineseTag(tag) {
+      const tagMap = {
+        'array': '数组',
+        'string': '字符串',
+        'hash-table': '哈希表',
+        'dynamic-programming': '动态规划',
+        'math': '数学',
+        'sorting': '排序',
+        'greedy': '贪心算法',
+        'depth-first-search': '深度优先搜索',
+        'binary-search': '二分搜索',
+        'tree': '树',
+        'graph': '图',
+        'breadth-first-search': '广度优先搜索'
+      }
+      return tagMap[tag] || tag
     },
     isSolved(problemId) {
       if (!this.currentUser) return false

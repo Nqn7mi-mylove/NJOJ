@@ -3,14 +3,14 @@
     <div class="left-section">
       <div class="logo-container">
         <router-link to="/">
-          <h1 class="logo">Online Judge</h1>
+          <h1 class="logo">在线评测系统</h1>
         </router-link>
       </div>
       <div class="nav-links">
-        <router-link to="/" class="nav-link">Home</router-link>
-        <router-link to="/problems" class="nav-link">Problems</router-link>
-        <router-link to="/submissions" class="nav-link">Submissions</router-link>
-        <router-link to="/about" class="nav-link">About</router-link>
+        <router-link to="/" class="nav-link">首页</router-link>
+        <router-link to="/problems" class="nav-link">题库</router-link>
+        <router-link to="/submissions" class="nav-link">提交记录</router-link>
+        <router-link to="/about" class="nav-link">关于</router-link>
       </div>
     </div>
     <div class="right-section">
@@ -170,6 +170,7 @@ export default {
   font-weight: 500;
   color: inherit;
   margin-right: 5px;
+  font-size: 16px;
 }
 
 .auth-buttons {

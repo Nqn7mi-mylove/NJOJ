@@ -1,11 +1,11 @@
 <template>
   <div class="submission-list">
-    <h1>My Submissions</h1>
+    <h1>我的提交记录</h1>
     
     <div class="filters">
       <el-form :inline="true" class="filter-form">
-        <el-form-item label="Problem">
-          <el-select v-model="filters.problem_id" placeholder="All Problems" clearable filterable>
+        <el-form-item label="题目">
+          <el-select v-model="filters.problem_id" placeholder="所有题目" clearable filterable>
             <el-option 
               v-for="problem in problems" 
               :key="problem.id" 
@@ -15,22 +15,22 @@
           </el-select>
         </el-form-item>
         
-        <el-form-item label="Status">
-          <el-select v-model="filters.status" placeholder="All Statuses" clearable>
-            <el-option label="Accepted" value="accepted" />
-            <el-option label="Wrong Answer" value="wrong_answer" />
-            <el-option label="Time Limit Exceeded" value="time_limit_exceeded" />
-            <el-option label="Memory Limit Exceeded" value="memory_limit_exceeded" />
-            <el-option label="Runtime Error" value="runtime_error" />
-            <el-option label="Compilation Error" value="compilation_error" />
-            <el-option label="Pending" value="pending" />
-            <el-option label="Judging" value="judging" />
+        <el-form-item label="状态">
+          <el-select v-model="filters.status" placeholder="所有状态" clearable>
+            <el-option label="通过" value="accepted" />
+            <el-option label="答案错误" value="wrong_answer" />
+            <el-option label="超时" value="time_limit_exceeded" />
+            <el-option label="内存超限" value="memory_limit_exceeded" />
+            <el-option label="运行时错误" value="runtime_error" />
+            <el-option label="编译错误" value="compilation_error" />
+            <el-option label="等待中" value="pending" />
+            <el-option label="评判中" value="judging" />
           </el-select>
         </el-form-item>
         
         <el-form-item>
-          <el-button type="primary" @click="applyFilters">Filter</el-button>
-          <el-button @click="resetFilters">Reset</el-button>
+          <el-button type="primary" @click="applyFilters">筛选</el-button>
+          <el-button @click="resetFilters">重置</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -41,48 +41,48 @@
       v-loading="loading"
     >
       <!-- ID列已被移除，以简化界面显示 -->
-      <el-table-column label="Problem" width="250">
+      <el-table-column label="题目" width="250">
         <template #default="scope">
           <router-link :to="`/problems/${scope.row.problem_id}`">
             {{ getProblemTitle(scope.row.problem_id) }}
           </router-link>
         </template>
       </el-table-column>
-      <el-table-column label="Status" width="200">
+      <el-table-column label="状态" width="200">
         <template #default="scope">
           <el-tag :type="getStatusType(scope.row.status)">
             {{ formatStatus(scope.row.status) }}
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="Language" width="100">
+      <el-table-column label="语言" width="100">
         <template #default="scope">
           {{ scope.row.language }}
         </template>
       </el-table-column>
-      <el-table-column label="Time" width="120">
+      <el-table-column label="耗时" width="120">
         <template #default="scope">
           {{ scope.row.time_used }} ms
         </template>
       </el-table-column>
-      <el-table-column label="Memory" width="120">
+      <el-table-column label="内存" width="120">
         <template #default="scope">
           {{ scope.row.memory_used }} KB
         </template>
       </el-table-column>
-      <el-table-column label="Submitted At" width="180">
+      <el-table-column label="提交时间" width="180">
         <template #default="scope">
           {{ formatDate(scope.row.submitted_at) }}
         </template>
       </el-table-column>
-      <el-table-column label="Actions" width="120">
+      <el-table-column label="操作" width="120">
         <template #default="scope">
           <el-button 
             size="small" 
             type="primary" 
             @click="viewSubmission(scope.row.id)"
           >
-            View
+            查看
           </el-button>
         </template>
       </el-table-column>
@@ -146,7 +146,7 @@ export default {
         await this.loadProblemDetails()
       } catch (error) {
         console.error('Error loading submissions', error)
-        this.setError('Failed to load submissions')
+        this.setError('加载提交记录失败')
       } finally {
         this.loading = false
       }
@@ -216,15 +216,15 @@ export default {
     },
     formatStatus(status) {
       const formatted = {
-        accepted: 'Accepted',
-        wrong_answer: 'Wrong Answer',
-        time_limit_exceeded: 'Time Limit Exceeded',
-        memory_limit_exceeded: 'Memory Limit Exceeded',
-        runtime_error: 'Runtime Error',
-        compilation_error: 'Compilation Error',
-        pending: 'Pending',
-        judging: 'Judging',
-        system_error: 'System Error'
+        accepted: '通过',
+        wrong_answer: '答案错误',
+        time_limit_exceeded: '超时',
+        memory_limit_exceeded: '内存超限',
+        runtime_error: '运行时错误',
+        compilation_error: '编译错误',
+        pending: '等待中',
+        judging: '评判中',
+        system_error: '系统错误'
       }
       return formatted[status] || status
     },
