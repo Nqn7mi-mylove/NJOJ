@@ -62,6 +62,18 @@ async def update_problem(
     update_data = problem_in.dict(exclude_unset=True)
     update_data["updated_at"] = datetime.utcnow()
     
+    # 如果提供了自定义ID，检查是否已存在
+    if "custom_id" in update_data and update_data["custom_id"]:
+        existing = await problems_collection.find_one({
+            "custom_id": update_data["custom_id"],
+            "_id": {"$ne": ObjectId(problem_id)}
+        })
+        if existing:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Problem with custom ID '{update_data['custom_id']}' already exists"
+            )
+    
     await problems_collection.update_one(
         {"_id": ObjectId(problem_id)},
         {"$set": update_data}

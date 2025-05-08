@@ -23,6 +23,7 @@ class ProblemCreate(ProblemBase):
 
 # Schema for updating a problem
 class ProblemUpdate(BaseModel):
+    custom_id: Optional[str] = None  # 用户自定义的问题ID
     title: Optional[str] = None
     description: Optional[str] = None
     difficulty: Optional[DifficultyLevel] = None

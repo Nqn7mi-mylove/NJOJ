@@ -303,10 +303,11 @@ export default {
           // Copy the problem data to the form
           const {
             title, description, difficulty, tags, time_limit, memory_limit,
-            is_public, test_cases, has_special_judge, special_judge_code
+            is_public, test_cases, has_special_judge, special_judge_code, custom_id
           } = this.problem
           
           this.formData = {
+            custom_id: custom_id || '',  // 添加custom_id字段
             title,
             description,
             difficulty,
