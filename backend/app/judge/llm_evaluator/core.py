@@ -9,14 +9,13 @@ from langchain_openai import ChatOpenAI
 from langchain.prompts import PromptTemplate
 
 from .config import llm_config
-from .prompts import ERROR_ANALYSIS_PROMPT, IMPROVEMENT_PROMPT, SINGLE_STEP_PROMPT
+from .prompts import ERROR_ANALYSIS_PROMPT, IMPROVEMENT_PROMPT
 from .models import EvaluationResult, ErrorAnalysis, ImprovementSuggestion
 from .utils import (
     parse_llm_response,
     direct_json_parse,
     format_test_results,
     create_error_response,
-    create_fallback_evaluation,
     create_fallback_response
 )
 
@@ -47,7 +46,6 @@ class LLMEvaluator:
         # Define prompt templates
         self.error_analysis_template = PromptTemplate.from_template(ERROR_ANALYSIS_PROMPT)
         self.improvement_template = PromptTemplate.from_template(IMPROVEMENT_PROMPT)
-        self.single_step_template = PromptTemplate.from_template(SINGLE_STEP_PROMPT)
     
     async def evaluate_code(
             self, 
@@ -78,11 +76,10 @@ class LLMEvaluator:
             # 格式化测试结果
             formatted_test_results = format_test_results(test_results) if test_results else "无测试结果"
             
-            # 尝试直接使用单步评估（更简单的提示，可能更容易成功）
+            # 如果没有测试结果，直接返回一个错误响应
             if not test_results or len(test_results) == 0:
-                print("无测试结果，使用单步评估")
-                result = await self._safe_single_step_evaluate(code, problem_description, formatted_test_results)
-                return result
+                print("无测试结果，无法进行评估")
+                return create_error_response("AI评估服务暂时不可用")
                 
             # 使用双步评估
             try:
@@ -90,8 +87,8 @@ class LLMEvaluator:
                 # 第一步：错误分析 - 使用安全的封装方法
                 error_analysis = await self._safe_error_analysis(code, problem_description, formatted_test_results)
                 if error_analysis is None:
-                    print("错误分析失败，转为单步评估")
-                    return await self._safe_single_step_evaluate(code, problem_description, formatted_test_results)
+                    print("错误分析失败，评估终止")
+                    return create_error_response("AI评估服务暂时不可用")
                 
                 print("开始第二步：改进建议")
                 # 第二步：改进建议 - 使用安全的封装方法
@@ -140,8 +137,8 @@ class LLMEvaluator:
                 print(f"双步评估过程中出现错误: {type(e).__name__}: {str(e)}")
                 print("====================================\n")
                 
-                # 如果双步评估失败，尝试单步评估
-                return await self._safe_single_step_evaluate(code, problem_description, formatted_test_results)
+                # 返回错误响应
+                return create_error_response("AI评估服务暂时不可用")
         except Exception as e:
             print("\n====== LLM评估总体异常 ======")
             traceback.print_exc()
@@ -149,7 +146,7 @@ class LLMEvaluator:
             print("====================================\n")
             
             # 提供一个默认响应
-            return create_error_response(f"评估失败: {type(e).__name__}")
+            return create_error_response("AI评估服务暂时不可用")
             
     async def _safe_error_analysis(self, code: str, problem_description: str, test_results: str) -> Optional[Dict[str, Any]]:
         """安全地执行错误分析，处理所有可能的异常
@@ -219,47 +216,7 @@ class LLMEvaluator:
             print(f"改进建议分析失败: {type(e).__name__}: {str(e)}")
             return None
             
-    async def _safe_single_step_evaluate(self, code: str, problem_description: str, test_results: str) -> Dict[str, Any]:
-        """安全地执行单步评估，无论发生什么错误都返回有效响应
-        
-        Args:
-            code: 待评估代码
-            problem_description: 问题描述
-            test_results: 格式化的测试结果
-            
-        Returns:
-            Dict[str, Any]: 评估结果或错误响应
-        """
-        try:
-            print("执行单步评估")
-            try:
-                # 格式化提示模板
-                formatted_prompt = self.single_step_template.format(
-                    problem_description=problem_description,
-                    code=code,
-                    test_results=test_results
-                )
-                
-                # 调用API
-                response_text = await self._call_llm_api(formatted_prompt)
-                
-                # 解析结果
-                result = direct_json_parse(response_text)
-                print("单步评估解析成功")
-                
-                # 确保必要字段存在
-                self._ensure_evaluation_fields(result)
-                
-                return result
-            except Exception as e:
-                print(f"单步评估失败: {type(e).__name__}: {str(e)}")
-                # 提供一个回退响应
-                return create_fallback_evaluation("单步评估失败")
-        except Exception as e:
-            # 这是最后一道防线，确保我们总是返回有效的响应结构
-            print(f"单步评估完全失败: {type(e).__name__}: {str(e)}")
-            return create_error_response("评估过程失败")
-    
+
     async def _call_llm_api(self, prompt: str) -> str:
         """Call the LLM API with a prompt using LangChain.
         
