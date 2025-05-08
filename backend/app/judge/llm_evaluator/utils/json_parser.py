@@ -35,7 +35,7 @@ def parse_llm_response(response_text: str) -> Dict[str, Any]:
         response_text: LLM的原始响应文本
         
     Returns:
-        dict: 解析后的JSON数据
+        dict: 解析后的JSON数据，已规范化键名
     
     Raises:
         ValueError: 如果无法解析为有效JSON
@@ -87,6 +87,35 @@ def parse_llm_response(response_text: str) -> Dict[str, Any]:
     raise ValueError("无法解析为有效JSON")
 
 
+def normalize_dict_keys(data: Any) -> Any:
+    """递归地规范化字典中的所有键名，移除前导和尾随的空白字符
+    
+    Args:
+        data: 要规范化的数据，可以是任何类型
+        
+    Returns:
+        规范化后的数据
+    """
+    if not isinstance(data, dict):
+        # 如果是列表，则递归规范化每个元素
+        if isinstance(data, list):
+            return [normalize_dict_keys(item) for item in data]
+        # 如果是其他类型，则直接返回
+        return data
+    
+    # 对于字典，规范化键名并递归处理值
+    result = {}
+    for key, value in data.items():
+        # 规范化键名（如果是字符串）
+        normalized_key = key.strip() if isinstance(key, str) else key
+        # 递归规范化值
+        normalized_value = normalize_dict_keys(value)
+        # 存储规范化后的键值对
+        result[normalized_key] = normalized_value
+        
+    return result
+
+
 def direct_json_parse(response_text: str) -> Dict[str, Any]:
     """直接解析LLM返回的带有前导换行符和空格的JSON格式
     
@@ -100,7 +129,7 @@ def direct_json_parse(response_text: str) -> Dict[str, Any]:
         response_text: LLM的原始响应文本
         
     Returns:
-        dict: 解析后的JSON数据
+        dict: 解析后的JSON数据，已规范化键名
     """
     try:
         # 去除前后空白字符
@@ -114,7 +143,22 @@ def direct_json_parse(response_text: str) -> Dict[str, Any]:
                 cleaned_text = content.group(1).strip()
         
         # 解析JSON
-        return json.loads(cleaned_text)
+        json_data = json.loads(cleaned_text)
+        
+        # 规范化键名
+        normalized_data = normalize_dict_keys(json_data)
+        
+        # 打印规范化前后的键对比，帮助调试
+        if isinstance(json_data, dict) and isinstance(normalized_data, dict):
+            print("\n====== 键名规范化前后对比 ======")
+            original_keys = list(json_data.keys())
+            normalized_keys = list(normalized_data.keys())
+            for i in range(min(len(original_keys), len(normalized_keys))):
+                if original_keys[i] != normalized_keys[i]:
+                    print(f"原始键: '{original_keys[i]}' -> 规范化键: '{normalized_keys[i]}'")
+            print("===============================\n")
+        
+        return normalized_data
     except Exception as e:
         raise ValueError(f"直接JSON解析失败: {str(e)}")
 
@@ -139,6 +183,9 @@ def parse_newline_json(text: str) -> Optional[Dict[str, Any]]:
         fixed_text = re.sub(r'[^}]*$', '', fixed_text)
         
         # 解析JSON
-        return json.loads(fixed_text)
+        json_data = json.loads(fixed_text)
+        
+        # 规范化键名
+        return normalize_dict_keys(json_data)
     except Exception:
         return None
