@@ -29,21 +29,21 @@ ERROR_ANALYSIS_PROMPT = """
 
 输出JSON格式的错误分析：
 ```json
-{
+{{
   "error_types": ["错误类型1", "错误类型2", ...],
   "explanation": "对程序整体问题的分析，包括导致错误的根本原因和问题所在",
   "error_details": [
-    {
+    {{
       "type": "错误类型1",
       "description": "这类错误的详细描述",
       "test_cases": ["测试用例ID1", "测试用例ID2", ...]
-    },
-    {
+    }},
+    {{
       "type": "错误类型2",
       "description": "这类错误的详细描述",
       "test_cases": ["测试用例ID3", "测试用例ID4", ...]
-    }
+    }}
   ]
-}
+}}
 ```
 """
