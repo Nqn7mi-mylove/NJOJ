@@ -26,7 +26,7 @@ IMPROVEMENT_PROMPT = """
 
 输出JSON格式的改进建议：
 ```json
-{
+{{
   "code_standard": [
     "代码规范建议1",
     "代码规范建议2",
@@ -38,6 +38,6 @@ IMPROVEMENT_PROMPT = """
     ...
   ],
   "summary": "总结评价"
-}
+}}
 ```
 """
