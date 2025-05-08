@@ -14,7 +14,8 @@ class TestCase(BaseModel):
     is_sample: bool = False
     
 class Problem(BaseModel):
-    id: Optional[str] = None
+    id: Optional[str] = None  # 系统内部ID（MongoDB ObjectID）
+    custom_id: Optional[str] = None  # 用户定义的问题ID，如 "P1001"，供显示和URL使用
     title: str
     description: str  # Markdown content
     difficulty: DifficultyLevel

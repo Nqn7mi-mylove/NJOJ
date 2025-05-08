@@ -18,6 +18,11 @@
           </div>
         </template>
         
+        <el-form-item label="Custom ID" prop="custom_id">
+          <el-input v-model="formData.custom_id" placeholder="自定义问题ID，如P1001"></el-input>
+          <div class="form-tip">自定义ID将用于显示和URL引用，如不填写将使用系统ID</div>
+        </el-form-item>
+        
         <el-form-item label="Title" prop="title">
           <el-input v-model="formData.title" placeholder="Problem title"></el-input>
         </el-form-item>
@@ -231,6 +236,7 @@ export default {
   data() {
     return {
       formData: {
+        custom_id: '',
         title: '',
         description: '',
         difficulty: 'medium',

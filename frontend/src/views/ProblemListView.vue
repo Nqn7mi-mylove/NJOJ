@@ -30,10 +30,10 @@
       style="width: 100%"
       v-loading="loading"
     >
-      <el-table-column prop="id" label="ID" width="80" />
+      <el-table-column prop="custom_id" label="ID" width="80" />
       <el-table-column prop="title" label="Title">
         <template #default="scope">
-          <router-link :to="`/problems/${scope.row.id}`">{{ scope.row.title }}</router-link>
+          <router-link :to="`/problems/${scope.row.custom_id}`">{{ scope.row.title }}</router-link>
         </template>
       </el-table-column>
       <el-table-column prop="difficulty" label="Difficulty" width="120">

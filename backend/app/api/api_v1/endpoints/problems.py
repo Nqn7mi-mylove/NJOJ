@@ -19,6 +19,14 @@ async def create_problem(
     """
     problems_collection = db.db.problems
     
+    # 检查自定义ID是否已存在
+    existing_problem = await problems_collection.find_one({"custom_id": problem_in.custom_id})
+    if existing_problem:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Problem with custom ID '{problem_in.custom_id}' already exists"
+        )
+    
     problem_dict = problem_in.dict()
     problem_dict["author_id"] = current_user["id"]
     problem_dict["created_at"] = datetime.utcnow()
@@ -70,17 +78,32 @@ async def read_problem(
     current_user = Depends(get_current_active_user)
 ) -> Any:
     """
-    Get a specific problem by id.
+    Get a specific problem by id or custom_id.
     """
     problems_collection = db.db.problems
     
+    # 尝试先使用自定义ID查询
     problem = await problems_collection.find_one({
-        "_id": ObjectId(problem_id),
+        "custom_id": problem_id,
         "$or": [
             {"is_public": True},
             {"author_id": current_user["id"]}
         ]
     })
+    
+    # 如果没有找到，尝试使用系统内部ID查询
+    if not problem:
+        try:
+            problem = await problems_collection.find_one({
+                "_id": ObjectId(problem_id),
+                "$or": [
+                    {"is_public": True},
+                    {"author_id": current_user["id"]}
+                ]
+            })
+        except:
+            # 如果传入的ID不是一个有效的ObjectId
+            pass
     
     if not problem:
         raise HTTPException(

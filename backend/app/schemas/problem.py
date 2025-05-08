@@ -16,6 +16,7 @@ class ProblemBase(BaseModel):
 
 # Schema for creating a problem
 class ProblemCreate(ProblemBase):
+    custom_id: Optional[str] = None  # 用户自定义的问题ID，例如 "P1001"
     test_cases: List[TestCase] = []
     sample_test_cases: List[TestCase] = []
     special_judge_code: Optional[str] = None
@@ -37,6 +38,7 @@ class ProblemUpdate(BaseModel):
 # Schema for problem response
 class Problem(ProblemBase):
     id: str
+    custom_id: Optional[str] = None  # 用户自定义的问题ID
     created_at: datetime
     updated_at: datetime
     author_id: str
