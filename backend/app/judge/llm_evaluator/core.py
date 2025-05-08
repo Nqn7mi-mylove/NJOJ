@@ -238,7 +238,22 @@ class LLMEvaluator:
         """
         try:
             # 使用LangChain调用LLM
+            print("\n====== 发送给LLM的提示 ======")
+            print(prompt[:500] + "..." if len(prompt) > 500 else prompt)  # 防止过长
+            print("==============================\n")
+            
             response = await self.chat_model.apredict(prompt)
+            
+            # 打印原始响应，无论是否发生异常
+            print("\n====== LLM原始响应 ======")
+            print(response)
+            print("==============================\n")
+            
+            # 打印字节表示，便于调试不可见字符
+            print("\n====== 原始响应的字节表示 ======")
+            print(repr(response))
+            print("==============================\n")
+            
             return response
         except Exception as e:
             print(f"LLM API调用失败: {type(e).__name__}: {str(e)}")
