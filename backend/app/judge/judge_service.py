@@ -10,7 +10,8 @@ import re
 from app.db.mongodb import db
 from app.models.submission import JudgeStatus
 from app.core.config import settings
-from app.judge.llm_evaluator import llm_evaluator
+from app.judge.llm_evaluator import LLMEvaluator
+from app.judge.llm_evaluator import llm_evaluator as global_llm_evaluator
 
 # 检查Docker是否可用
 try:
@@ -160,15 +161,31 @@ async def judge_submission(submission_id: str, problem_id: str, user_id: str):
             
             # After processing test cases, perform LLM evaluation
             try:
+                # 添加非常明显的打印语句，确认这段代码确实被执行
+                print("\n!!!!!!! 准备调用LLM评估器 !!!!!!!!!")
+                print(f"\n!!!!!!! 提交ID: {submission_id} !!!!!!!!!")
+                print(f"\n!!!!!!! 测试用例结果数量: {len(test_case_results)} !!!!!!!!!\n")
+                
                 # Get problem description
                 problem_description = problem["description"]
                 
                 # 直接传递测试用例结果列表，而不是包装到字典中
-                llm_results = await llm_evaluator.evaluate_code(
+                print("\n!!!!!!! 正在调用llm_evaluator.evaluate_code !!!!!!!!!")
+                
+                # 重要修改：每次调用前创建新的评估器实例
+                # 这确保我们使用的是最新的代码，而不是服务启动时创建的单例
+                print("\n!!!!!!! 创建新的LLM评估器实例 !!!!!!!!!")
+                fresh_evaluator = LLMEvaluator()
+                
+                llm_results = await fresh_evaluator.evaluate_code(
                     code=code,
                     problem_description=problem_description,
                     test_results=test_case_results
                 )
+                
+                print("\n!!!!!!! LLM评估完成 !!!!!!!!!")
+                print(f"\n!!!!!!! 返回结果类型: {type(llm_results)} !!!!!!!!!")
+                print(f"\n!!!!!!! 返回结果的键: {list(llm_results.keys()) if isinstance(llm_results, dict) else 'Not a dict'} !!!!!!!!!\n")
                 
                 # Update submission with LLM evaluation results
                 await submissions_collection.update_one(
