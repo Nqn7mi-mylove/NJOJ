@@ -40,7 +40,7 @@
       style="width: 100%"
       v-loading="loading"
     >
-      <el-table-column prop="id" label="ID" width="80" />
+      <!-- ID列已被移除，以简化界面显示 -->
       <el-table-column label="Problem" width="250">
         <template #default="scope">
           <router-link :to="`/problems/${scope.row.problem_id}`">

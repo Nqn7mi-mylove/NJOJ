@@ -38,7 +38,7 @@
               style="width: 100%"
               v-loading="submissionsLoading"
             >
-              <el-table-column prop="id" label="ID" width="80" />
+              <!-- ID列已被移除，以简化界面显示 -->
               <el-table-column label="Status" width="150">
                 <template #default="scope">
                   <el-tag :type="getStatusType(scope.row.status)">
