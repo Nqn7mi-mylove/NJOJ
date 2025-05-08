@@ -1,7 +1,17 @@
 <template>
   <div class="signup-container">
     <div class="signup-card">
-      <h2>Create an Account</h2>
+      <h2>创建账号</h2>
+      
+      <el-alert
+        v-if="!allowSignup"
+        title="注册功能已关闭"
+        type="error"
+        description="管理员已关闭注册功能。如需要账号，请联系系统管理员。"
+        show-icon
+        :closable="false"
+        class="signup-alert"
+      />
       <el-form
         ref="signupForm"
         :model="signupForm"
@@ -40,14 +50,20 @@
         </el-form-item>
         
         <el-form-item>
-          <el-button type="primary" native-type="submit" :loading="loading" class="submit-btn">
-            Sign Up
+          <el-button 
+            type="primary" 
+            native-type="submit" 
+            :loading="loading" 
+            class="submit-btn"
+            :disabled="!allowSignup"
+          >
+            注册
           </el-button>
         </el-form-item>
       </el-form>
       
       <div class="form-footer">
-        <p>Already have an account? <router-link to="/login">Log in</router-link></p>
+        <p>已有账号？ <router-link to="/login">登录</router-link></p>
       </div>
     </div>
   </div>
@@ -55,6 +71,7 @@
 
 <script>
 import { mapActions } from 'vuex'
+import api from '@/services/api'
 
 export default {
   name: 'SignupView',
@@ -62,7 +79,7 @@ export default {
     // Custom validator to check if passwords match
     const validatePasswordMatch = (rule, value, callback) => {
       if (value !== this.signupForm.password) {
-        callback(new Error('Passwords do not match'))
+        callback(new Error('密码不匹配'))
       } else {
         callback()
       }
@@ -78,27 +95,31 @@ export default {
       },
       rules: {
         username: [
-          { required: true, message: 'Please enter a username', trigger: 'blur' },
-          { min: 3, max: 20, message: 'Username must be 3-20 characters', trigger: 'blur' }
+          { required: true, message: '请输入用户名', trigger: 'blur' },
+          { min: 3, max: 20, message: '用户名必须在3-20个字符之间', trigger: 'blur' }
         ],
         email: [
-          { required: true, message: 'Please enter your email', trigger: 'blur' },
-          { type: 'email', message: 'Please enter a valid email address', trigger: 'blur' }
+          { required: true, message: '请输入您的电子邮箱', trigger: 'blur' },
+          { type: 'email', message: '请输入有效的电子邮箱地址', trigger: 'blur' }
         ],
         full_name: [
-          { required: true, message: 'Please enter your full name', trigger: 'blur' }
+          { required: true, message: '请输入您的全名', trigger: 'blur' }
         ],
         password: [
-          { required: true, message: 'Please enter a password', trigger: 'blur' },
-          { min: 6, message: 'Password must be at least 6 characters', trigger: 'blur' }
+          { required: true, message: '请输入密码', trigger: 'blur' },
+          { min: 6, message: '密码至少需要六个字符', trigger: 'blur' }
         ],
         confirmPassword: [
-          { required: true, message: 'Please confirm your password', trigger: 'blur' },
+          { required: true, message: '请确认您的密码', trigger: 'blur' },
           { validator: validatePasswordMatch, trigger: 'blur' }
         ]
       },
-      loading: false
+      loading: false,
+      allowSignup: true
     }
+  },
+  created() {
+    this.checkSignupStatus()
   },
   methods: {
     ...mapActions({
@@ -106,8 +127,22 @@ export default {
       setError: 'setError',
       clearError: 'clearError'
     }),
+    async checkSignupStatus() {
+      try {
+        const response = await api.get('/system-config')
+        this.allowSignup = response.data.allow_signup
+      } catch (error) {
+        console.error('获取注册状态失败', error)
+      }
+    },
     async submitForm() {
       this.clearError()
+      
+      // 如果注册被禁用，直接返回
+      if (!this.allowSignup) {
+        this.setError('系统当前不允许注册新用户')
+        return
+      }
       
       try {
         await this.$refs.signupForm.validate()
@@ -154,6 +189,10 @@ export default {
   background-color: #fff;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.signup-alert {
+  margin-bottom: 20px;
 }
 
 h2 {

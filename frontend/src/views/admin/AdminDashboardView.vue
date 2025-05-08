@@ -51,6 +51,18 @@
     
     <el-row :gutter="20" class="dashboard-row">
       <el-col :span="24">
+        <el-card class="dashboard-card mb-20">
+          <template #header>
+            <div class="card-header">
+              <span>系统设置</span>
+              <el-button type="primary" @click="$router.push('/admin/settings')">管理</el-button>
+            </div>
+          </template>
+          <div class="card-content">
+            <p>配置在线评判系统的全局设置，包括用户注册控制等功能</p>
+          </div>
+        </el-card>
+        
         <el-card class="recent-submissions">
           <template #header>
             <div class="card-header">

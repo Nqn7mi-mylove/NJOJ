@@ -41,6 +41,17 @@ async def create_user_signup(user_in: UserCreate) -> Any:
     """
     Create new user without the need to be logged in.
     """
+    # 检查系统是否允许注册
+    configs_collection = db.db.system_configs
+    config = await configs_collection.find_one({"_id": "system_config"})
+    
+    # 如果存在系统配置且禁止注册，则抛出异常
+    if config and not config.get("allow_signup", True):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="User registration is currently disabled"
+        )
+    
     users_collection = db.db.users
     
     existing_user = await users_collection.find_one({"username": user_in.username})
