@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: oj-mongodb
+    restart: always
+    environment:
+      - MONGO_DATA_DIR=/data/db
+    volumes:
+      - mongo_data:/data/db
+    ports:
+      - "27017:27017"
+    networks:
+      - oj-network
+
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: oj-backend
+    restart: always
+    volumes:
+      - ./backend:/app
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "8000:8000"
+    environment:
+      - MONGO_HOST=mongodb
+      - MONGO_PORT=27017
+      - MONGO_DB=oj_system
+    depends_on:
+      - mongodb
+    networks:
+      - oj-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: oj-frontend
+    restart: always
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    networks:
+      - oj-network
+
+networks:
+  oj-network:
+    driver: bridge
+
+volumes:
+  mongo_data:
