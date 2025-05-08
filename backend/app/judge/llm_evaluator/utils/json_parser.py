@@ -25,6 +25,13 @@ def clean_json_string(json_str: str) -> str:
     json_str = re.sub(r',\s*}', '}', json_str)  # 移除对象末尾的逗号
     json_str = re.sub(r',\s*]', ']', json_str)  # 移除数组末尾的逗号
     
+    # 特别修复：处理"\n "error_types""这样的格式问题
+    # 将所有键名中的换行符和多余空格去除
+    json_str = re.sub(r'([{,])\s*[\n\r]+\s*"', r'\1"', json_str)
+    
+    # 去除键名中可能存在的其他特殊字符
+    json_str = re.sub(r'"\s+([^"]+)\s+"\s*:', r'"\1":', json_str)
+    
     return json_str
 
 
@@ -40,10 +47,18 @@ def parse_llm_response(response_text: str) -> Dict[str, Any]:
     Raises:
         ValueError: 如果无法解析为有效JSON
     """
+    # 打印原始响应进行调试
+    print("\n====== LLM原始响应 (parse_llm_response) ======")
+    print(response_text[:200] + "..." if len(response_text) > 200 else response_text)
+    print("原始响应字节表示:")
+    print(repr(response_text[:200]) + "..." if len(response_text) > 200 else repr(response_text))
+    print("==============================\n")
+    
     # 1. 尝试直接解析
     try:
         return direct_json_parse(response_text)
-    except Exception:
+    except Exception as e:
+        print(f"直接解析失败: {type(e).__name__}: {str(e)}")
         pass
     
     # 2. 尝试从文本中提取JSON
@@ -142,6 +157,23 @@ def direct_json_parse(response_text: str) -> Dict[str, Any]:
             if content:
                 cleaned_text = content.group(1).strip()
         
+        # 清理JSON字符串中的格式问题
+        cleaned_text = clean_json_string(cleaned_text)
+        
+        # 记录清理后的原始字符串
+        print("\n====== 清理后的JSON字符串 ======")
+        print(cleaned_text)
+        print("====== 字节表示 ======")
+        print(repr(cleaned_text))
+        print("===============================\n")
+        
+        # 尝试修复特定的格式问题："\n "error_types"" -> "error_types"
+        # 这个模式专门处理我们发现的KeyError: '\n "error_types"'错误
+        problematic_key_pattern = r'"\\n\s+"([^"]+)""'
+        if re.search(problematic_key_pattern, cleaned_text):
+            print("检测到特殊键名格式问题，尝试修复...")
+            cleaned_text = re.sub(problematic_key_pattern, r'"\1"', cleaned_text)
+        
         # 解析JSON
         json_data = json.loads(cleaned_text)
         
@@ -159,6 +191,29 @@ def direct_json_parse(response_text: str) -> Dict[str, Any]:
             print("===============================\n")
         
         return normalized_data
+    except json.JSONDecodeError as je:
+        # JSON解析错误，尝试更激进的清理
+        print(f"JSON解析错误: {str(je)}，尝试更激进的清理")
+        try:
+            # 尝试修复JSON字符串中的常见错误
+            # 1. 移除所有键名中的不可见字符
+            cleaned_text_aggressive = re.sub(r'"[\s\n\r]+(\w+)[\s\n\r]+"\s*:', r'"\1":', cleaned_text)
+            # 2. 处理键值之间的格式问题
+            cleaned_text_aggressive = re.sub(r':\s*[\n\r]+\s*"', ': "', cleaned_text_aggressive)
+            # 3. 处理值之间的格式问题
+            cleaned_text_aggressive = re.sub(r'",\s*[\n\r]+\s*"', '", "', cleaned_text_aggressive)
+            
+            print("\n====== 激进清理后的JSON字符串 ======")
+            print(cleaned_text_aggressive)
+            print("======================================\n")
+            
+            # 重新尝试解析
+            json_data = json.loads(cleaned_text_aggressive)
+            return normalize_dict_keys(json_data)
+        except Exception as e2:
+            # 如果连激进清理后也无法解析，则尝试正则表达式提取键值
+            print(f"激进清理后仍无法解析: {str(e2)}，尝试正则提取")
+            raise ValueError(f"JSON解析失败，原始错误: {str(je)}，激进清理后错误: {str(e2)}")
     except Exception as e:
         raise ValueError(f"直接JSON解析失败: {str(e)}")
 
