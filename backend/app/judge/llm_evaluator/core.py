@@ -170,6 +170,16 @@ class LLMEvaluator:
             # 调用API
             analysis_result = await self._call_llm_api(formatted_prompt)
             
+            # 打印原始响应，帮助调试
+            print("\n====== LLM原始响应(错误分析) ======")
+            print(f"\n{analysis_result}\n")
+            print("======================================\n")
+            
+            # 打印响应的字节表示，帮助调试不可见字符
+            print("\n====== 原始响应的字节表示 ======")
+            print(repr(analysis_result))
+            print("======================================\n")
+            
             # 解析结果
             error_analysis = direct_json_parse(analysis_result)
             print("错误分析解析成功")
