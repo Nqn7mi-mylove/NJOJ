@@ -151,79 +151,11 @@
             <h4>Overall Summary</h4>
             <div class="summary-content">
               <p>{{ submission.llm_evaluation.summary }}</p>
-              <div v-if="submission.llm_evaluation.overall_score" class="score-badge">
-                Score: {{ submission.llm_evaluation.overall_score }}
-              </div>
+              <!-- 已删除分数显示 -->
             </div>
           </div>
           
-          <el-collapse v-model="activeNames">
-            <el-collapse-item title="Code Standard" name="code_standard">
-              <div class="evaluation-dimension">
-                <div v-if="hasCodeStandardFeedback">
-                  <div v-if="submission.llm_evaluation.code_standard.pros && submission.llm_evaluation.code_standard.pros.length > 0" class="pros">
-                    <h5>Pros:</h5>
-                    <ul>
-                      <li v-for="(pro, index) in submission.llm_evaluation.code_standard.pros" :key="`cs-pro-${index}`">{{ pro }}</li>
-                    </ul>
-                  </div>
-                  <div v-if="submission.llm_evaluation.code_standard.cons && submission.llm_evaluation.code_standard.cons.length > 0" class="cons">
-                    <h5>Cons:</h5>
-                    <ul>
-                      <li v-for="(con, index) in submission.llm_evaluation.code_standard.cons" :key="`cs-con-${index}`">{{ con }}</li>
-                    </ul>
-                  </div>
-                </div>
-                <div v-else class="no-feedback">
-                  <p>没有关于代码规范的具体反馈。</p>
-                </div>
-              </div>
-            </el-collapse-item>
-            
-            <el-collapse-item title="Code Logic" name="code_logic">
-              <div class="evaluation-dimension">
-                <div v-if="hasCodeLogicFeedback">
-                  <div v-if="submission.llm_evaluation.code_logic.pros && submission.llm_evaluation.code_logic.pros.length > 0" class="pros">
-                    <h5>Pros:</h5>
-                    <ul>
-                      <li v-for="(pro, index) in submission.llm_evaluation.code_logic.pros" :key="`cl-pro-${index}`">{{ pro }}</li>
-                    </ul>
-                  </div>
-                  <div v-if="submission.llm_evaluation.code_logic.cons && submission.llm_evaluation.code_logic.cons.length > 0" class="cons">
-                    <h5>Cons:</h5>
-                    <ul>
-                      <li v-for="(con, index) in submission.llm_evaluation.code_logic.cons" :key="`cl-con-${index}`">{{ con }}</li>
-                    </ul>
-                  </div>
-                </div>
-                <div v-else class="no-feedback">
-                  <p>没有关于代码逻辑的具体反馈。</p>
-                </div>
-              </div>
-            </el-collapse-item>
-            
-            <el-collapse-item title="Code Efficiency" name="code_efficiency">
-              <div class="evaluation-dimension">
-                <div v-if="hasCodeEfficiencyFeedback">
-                  <div v-if="submission.llm_evaluation.code_efficiency.pros && submission.llm_evaluation.code_efficiency.pros.length > 0" class="pros">
-                    <h5>Pros:</h5>
-                    <ul>
-                      <li v-for="(pro, index) in submission.llm_evaluation.code_efficiency.pros" :key="`ce-pro-${index}`">{{ pro }}</li>
-                    </ul>
-                  </div>
-                  <div v-if="submission.llm_evaluation.code_efficiency.cons && submission.llm_evaluation.code_efficiency.cons.length > 0" class="cons">
-                    <h5>Cons:</h5>
-                    <ul>
-                      <li v-for="(con, index) in submission.llm_evaluation.code_efficiency.cons" :key="`ce-con-${index}`">{{ con }}</li>
-                    </ul>
-                  </div>
-                </div>
-                <div v-else class="no-feedback">
-                  <p>没有关于代码效率的具体反馈。</p>
-                </div>
-              </div>
-            </el-collapse-item>
-          </el-collapse>
+          <!-- 已删除不必要的折叠面板 -->
           
           <div v-if="submission.llm_evaluation.improvement_suggestions && submission.llm_evaluation.improvement_suggestions.length > 0" class="improvement-suggestions">
             <h4>Improvement Suggestions</h4>
@@ -255,7 +187,7 @@ export default {
   },
   data() {
     return {
-      activeNames: ['code_standard'], // 默认展开代码标准部分
+      activeNames: [], // 已删除所有折叠面板
       loading: true,
       error: null
     }
@@ -269,45 +201,13 @@ export default {
       return (
         (evaluation.summary && evaluation.summary.includes('评估失败')) ||
         evaluation.error ||
+        // 修改判断逻辑，适应新的数据结构，不再依赖code_standard字段
         (evaluation.overall_score === '0' && 
-         (!evaluation.code_standard || 
-          !evaluation.code_standard.pros || 
-          !evaluation.code_standard.pros.length) && 
-         (!evaluation.code_standard || 
-          !evaluation.code_standard.cons || 
-          !evaluation.code_standard.cons.length))
+         (!evaluation.improvement_suggestions || 
+          !evaluation.improvement_suggestions.length))
       );
     },
-    // 检查是否有代码规范反馈
-    hasCodeStandardFeedback() {
-      const cs = this.submission.llm_evaluation?.code_standard;
-      if (!cs) return false;
-      
-      return (
-        (cs.pros && cs.pros.length > 0) || 
-        (cs.cons && cs.cons.length > 0)
-      );
-    },
-    // 检查是否有代码逻辑反馈
-    hasCodeLogicFeedback() {
-      const cl = this.submission.llm_evaluation?.code_logic;
-      if (!cl) return false;
-      
-      return (
-        (cl.pros && cl.pros.length > 0) || 
-        (cl.cons && cl.cons.length > 0)
-      );
-    },
-    // 检查是否有代码效率反馈
-    hasCodeEfficiencyFeedback() {
-      const ce = this.submission.llm_evaluation?.code_efficiency;
-      if (!ce) return false;
-      
-      return (
-        (ce.pros && ce.pros.length > 0) || 
-        (ce.cons && ce.cons.length > 0)
-      );
-    }
+    // 已移除与Code Standard、Code Logic和Code Efficiency相关的计算属性
   },
   methods: {
     getStatusType(status) {
@@ -482,14 +382,7 @@ h4 {
   border-radius: 4px;
 }
 
-.score-badge {
-  background-color: #f5f7fa;
-  padding: 5px 10px;
-  border-radius: 4px;
-  font-size: 14px;
-  font-weight: bold;
-  color: #606266;
-}
+/* 已删除分数显示样式 */
 
 .evaluation-details {
   margin-bottom: 20px;
