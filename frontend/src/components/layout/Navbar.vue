@@ -23,10 +23,17 @@
         
         <!-- 用户菜单 -->
         <div class="user-menu">
-          <span class="user-info">
-            <span class="username">{{ currentUser.username }}</span>
-          </span>
-          <el-button size="small" type="danger" @click="logout" class="logout-btn">退出</el-button>
+          <el-dropdown trigger="click">
+            <span class="user-dropdown">
+              <span class="username">{{ currentUser.username }}</span>
+              <i class="el-icon-arrow-down"></i>
+            </span>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item @click="logout">退出登录</el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
         </div>
       </template>
       <template v-else>
@@ -148,15 +155,21 @@ export default {
   align-items: center;
 }
 
-.username {
-  font-weight: 500;
-  color: #303133;
-  margin-right: 5px;
+.user-dropdown {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: color 0.3s;
 }
 
-.logout-btn {
-  font-size: 12px;
-  padding: 6px 10px;
+.user-dropdown:hover {
+  color: #409EFF;
+}
+
+.username {
+  font-weight: 500;
+  color: inherit;
+  margin-right: 5px;
 }
 
 .auth-buttons {

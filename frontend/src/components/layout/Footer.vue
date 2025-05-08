@@ -1,6 +1,6 @@
 <template>
   <div class="footer">
-    <p>&copy; {{ currentYear }} Online Judge System. All rights reserved.</p>
+    <span>&copy; {{ currentYear }} NJ Online Judge</span>
   </div>
 </template>
 
@@ -17,9 +17,10 @@ export default {
 
 <style scoped>
 .footer {
-  padding: 10px 0;
   text-align: center;
+  padding: 10px 0;
   color: #909399;
-  font-size: 14px;
+  font-size: 13px;
+  border-top: 1px solid #eaeaea;
 }
 </style>

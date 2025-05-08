@@ -32,15 +32,26 @@ html, body {
   margin: 0;
   padding: 0;
   height: 100%;
+  width: 100%;
+  overflow-x: hidden;
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
 #app {
-  height: 100vh;
+  min-height: 100vh;
+  width: 100%;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .layout-container {
-  height: 100%;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .el-header {
@@ -51,6 +62,10 @@ html, body {
 .el-main {
   padding: 20px;
   background-color: #f5f7fa;
+  flex: 1;
+  overflow-x: hidden;
+  box-sizing: border-box;
+  width: 100%;
 }
 
 .el-footer {
@@ -59,5 +74,7 @@ html, body {
   font-size: 14px;
   color: #909399;
   border-top: 1px solid #eaeaea;
+  width: 100%;
+  box-sizing: border-box;
 }
 </style>
