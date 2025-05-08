@@ -15,9 +15,6 @@ def create_error_response(error_message: str) -> Dict[str, Any]:
     return {
         "error": error_message,
         "summary": "评估失败，请稍后再试",
-        "code_standard": {"pros": [], "cons": []},
-        "code_logic": {"pros": [], "cons": []},
-        "code_efficiency": {"pros": [], "cons": []},
         "improvement_suggestions": ["由于技术原因无法提供详细建议"],
         "overall_score": "0"
     }
@@ -33,9 +30,6 @@ def create_fallback_evaluation(reason: str) -> Dict[str, Any]:
         Dict[str, Any]: 有用的回退评估
     """
     return {
-        "code_standard": {"pros": ["代码已提交"], "cons": ["无法进行详细评估"]},
-        "code_logic": {"pros": [], "cons": []},
-        "code_efficiency": {"pros": [], "cons": []},
         "improvement_suggestions": ["由于技术问题，无法提供详细评估和建议"],
         "summary": f"评估部分失败（原因：{reason}），请稍后再试",
         "overall_score": "0"

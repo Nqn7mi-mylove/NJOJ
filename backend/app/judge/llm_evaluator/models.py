@@ -38,15 +38,7 @@ class Inconsistency(BaseModel):
 class ImprovementSuggestion(BaseModel):
     """Improvement suggestion model."""
     
-    code_standard: Optional[CodeQualityAssessment] = Field(
-        default_factory=CodeQualityAssessment, description="代码规范评估"
-    )
-    code_logic: Optional[CodeQualityAssessment] = Field(
-        default_factory=CodeQualityAssessment, description="代码逻辑评估"
-    )
-    code_efficiency: Optional[CodeQualityAssessment] = Field(
-        default_factory=CodeQualityAssessment, description="代码效率评估"
-    )
+    # 已移除单独的代码规范、逻辑和效率评估字段，统一合并到改进建议中
     improvement_suggestions: List[str] = Field(default_factory=list, description="改进建议列表")
     summary: str = Field("", description="总结评价")
     overall_score: str = Field("0", description="总体评分")
@@ -61,15 +53,7 @@ class EvaluationResult(BaseModel):
     error_details: List[ErrorDetail] = Field(default_factory=list, description="详细错误信息")
     
     # Improvement suggestions
-    code_standard: CodeQualityAssessment = Field(
-        default_factory=CodeQualityAssessment, description="代码规范评估"
-    )
-    code_logic: CodeQualityAssessment = Field(
-        default_factory=CodeQualityAssessment, description="代码逻辑评估"
-    )
-    code_efficiency: CodeQualityAssessment = Field(
-        default_factory=CodeQualityAssessment, description="代码效率评估"
-    )
+    # 已移除单独的代码规范、逻辑和效率评估字段，统一合并到改进建议中
     inconsistencies: Optional[List[Inconsistency]] = Field(
         default_factory=list, description="代码一致性问题"
     )

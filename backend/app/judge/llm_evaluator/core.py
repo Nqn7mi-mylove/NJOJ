@@ -103,9 +103,6 @@ class LLMEvaluator:
                         "error_types": error_analysis.get("error_types", []),
                         "explanation": error_analysis.get("explanation", ""),
                         "error_details": error_analysis.get("error_details", []),
-                        "code_standard": {"pros": [], "cons": ["评估部分失败"]},
-                        "code_logic": {"pros": [], "cons": []},
-                        "code_efficiency": {"pros": [], "cons": []},
                         "improvement_suggestions": ["由于部分评估失败，无法提供详细建议"],
                         "overall_score": "0",
                         "summary": "部分评估完成"
@@ -122,9 +119,6 @@ class LLMEvaluator:
                     "error_details": error_analysis.get("error_details", []),
                     
                     # 改进建议部分
-                    "code_standard": improvement_data.get("code_standard", {"pros": [], "cons": []}),
-                    "code_logic": improvement_data.get("code_logic", {"pros": [], "cons": []}),
-                    "code_efficiency": improvement_data.get("code_efficiency", {"pros": [], "cons": []}),
                     "improvement_suggestions": improvement_data.get("improvement_suggestions", []),
                     "overall_score": improvement_data.get("overall_score", "0"),
                     "summary": improvement_data.get("summary", "")
@@ -357,17 +351,8 @@ class LLMEvaluator:
             data: 评估结果数据
         """
         # 确保基本字段存在
-        if "code_standard" not in data:
-            data["code_standard"] = {"pros": [], "cons": []}
-        elif isinstance(data["code_standard"], list):
-            data["code_standard"] = {"pros": [], "cons": data["code_standard"]}
-            
-        if "code_logic" not in data:
-            data["code_logic"] = {"pros": [], "cons": []}
-            
-        if "code_efficiency" not in data:
-            data["code_efficiency"] = {"pros": [], "cons": []}
-            
+        # 已移除对 code_standard、code_logic 和 code_efficiency 字段的处理
+                
         if "improvement_suggestions" not in data:
             if "suggestions" in data:
                 data["improvement_suggestions"] = data["suggestions"]
@@ -379,14 +364,6 @@ class LLMEvaluator:
             
         if "overall_score" not in data:
             data["overall_score"] = "0"
-            
-        # 确保字段格式正确
-        for field in ["code_standard", "code_logic", "code_efficiency"]:
-            if field in data and isinstance(data[field], dict):
-                if "pros" not in data[field]:
-                    data[field]["pros"] = []
-                if "cons" not in data[field]:
-                    data[field]["cons"] = []
 
 
 # Create a singleton instance
