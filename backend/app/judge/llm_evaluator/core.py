@@ -237,12 +237,24 @@ class LLMEvaluator:
             str: The response text
         """
         try:
+            # 打印配置信息以进行调试
+            print("\n====== LLM配置信息 ======")
+            print(f"模型名称: {self.model_name}")
+            print(f"API基础URL: {llm_config.api_base}")
+            print(f"API密钥: {llm_config.api_key[:5]}...{llm_config.api_key[-4:] if len(llm_config.api_key) > 9 else ''}")
+            print(f"温度: {llm_config.temperature}")
+            print(f"响应格式JSON: {llm_config.response_format_json}")
+            print(f"模型参数: {llm_config.get_model_kwargs()}")
+            print("==============================\n")
+            
             # 使用LangChain调用LLM
             print("\n====== 发送给LLM的提示 ======")
             print(prompt[:500] + "..." if len(prompt) > 500 else prompt)  # 防止过长
             print("==============================\n")
             
+            print("开始调用LLM API...")
             response = await self.chat_model.apredict(prompt)
+            print("LLM API调用完成!")
             
             # 打印原始响应，无论是否发生异常
             print("\n====== LLM原始响应 ======")
@@ -256,8 +268,20 @@ class LLMEvaluator:
             
             return response
         except Exception as e:
-            print(f"LLM API调用失败: {type(e).__name__}: {str(e)}")
-            raise
+            print(f"\n====== LLM API调用异常 ======")
+            print(f"异常类型: {type(e).__name__}")
+            print(f"异常消息: {str(e)}")
+            traceback.print_exc()
+            print("==============================\n")
+            
+            # 返回一个显示错误的特殊响应，而不是直接抛出异常
+            # 这样我们可以看到错误细节，而不是一个通用的KeyError
+            error_response = {
+                "error": f"API调用失败: {type(e).__name__}: {str(e)}",
+                "error_types": ["API错误"],
+                "explanation": str(e)
+            }
+            return json.dumps(error_response)
     
     def _ensure_evaluation_fields(self, data: Dict[str, Any]) -> None:
         """确保评估结果包含所有必要字段
