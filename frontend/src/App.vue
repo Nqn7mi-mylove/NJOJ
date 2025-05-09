@@ -34,26 +34,25 @@ html, body {
   padding: 0;
   height: 100%;
   width: 100%;
-  overflow-x: hidden;
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  overflow: hidden;
 }
 
 #app {
-  min-height: 100vh;
+  height: 100%;
   width: 100%;
-  overflow-x: hidden;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .layout-container {
   display: flex;
   flex-direction: column;
   flex: 1;
-  min-height: 100vh;
+  height: 100%;
   position: relative;
   width: 100%;
-  max-width: 100%;
   box-sizing: border-box;
 }
 
@@ -66,6 +65,7 @@ html, body {
   padding: 20px;
   background-color: #f5f7fa;
   flex: 1;
+  overflow-y: auto;
   overflow-x: hidden;
   box-sizing: border-box;
   width: 100%;

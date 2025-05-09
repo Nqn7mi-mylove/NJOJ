@@ -1,5 +1,5 @@
 <template>
-  <div class="system-settings-container">
+  <div class="system-settings-view">
     <h1>系统设置</h1>
     
     <el-card class="settings-card">
@@ -7,7 +7,7 @@
         <el-skeleton :rows="3" animated />
       </div>
       <div v-else>
-        <el-form label-position="top" :model="settings" ref="settingsForm">
+        <el-form label-position="top" :model="settings" ref="settingsForm" class="settings-form">
           <el-form-item label="用户注册">
             <el-switch
               v-model="settings.allow_signup"
@@ -73,14 +73,25 @@ export default {
 </script>
 
 <style scoped>
-.system-settings-container {
-  max-width: 800px;
+.system-settings-view {
+  width: 100%;
   margin: 0 auto;
-  padding: 20px;
+  padding: 0;
+}
+
+h1 {
+  margin-bottom: 20px;
+  color: #303133;
 }
 
 .settings-card {
-  margin-top: 20px;
+  margin-bottom: 20px;
+  max-width: 100%;
+  overflow: visible;
+}
+
+.settings-form {
+  width: 100%;
 }
 
 .loading-container {
