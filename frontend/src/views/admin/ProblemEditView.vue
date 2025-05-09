@@ -155,28 +155,46 @@
           style="margin-top: 15px;"
         ></el-alert>
         
-        <div class="test-cases">
-          <el-collapse v-model="activeTestCases">
-            <el-collapse-item
-              v-for="(testCase, index) in formData.test_cases"
-              :key="index"
-              :title="`测试用例 #${index + 1}${testCase.is_sample ? ' (示例)' : ''}`"
-              :name="index"
-            >
-              <div class="test-case-form">
-                <div class="test-case-header">
-                  <div class="test-case-left-controls">
+        <div class="test-cases-container">
+          <div class="test-cases-header" v-if="formData.test_cases.length > 0">
+            <div class="select-all-checkbox">
+              <el-checkbox 
+                :indeterminate="selectedTestCases.length > 0 && selectedTestCases.length < formData.test_cases.length"
+                :checked="selectedTestCases.length === formData.test_cases.length && formData.test_cases.length > 0"
+                @change="selectAllTestCases"
+              >
+                <span class="select-all-text">全选</span>
+              </el-checkbox>
+            </div>
+          </div>
+          
+          <div class="test-cases">
+            <el-collapse v-model="activeTestCases">
+              <el-collapse-item
+                v-for="(testCase, index) in formData.test_cases"
+                :key="index"
+                :name="index"
+              >
+                <template #title>
+                  <div class="test-case-title">
                     <el-checkbox 
                       v-model="testCase.selected" 
                       @change="updateSelectedTestCases"
+                      @click.stop
                       class="test-case-checkbox"
                     ></el-checkbox>
-                    <el-switch
-                      v-model="testCase.is_sample"
-                      active-text="示例测试用例(对用户可见)"
-                      inactive-text="隐藏测试用例"
-                    ></el-switch>
+                    <span>测试用例 #{{ index + 1 }}{{ testCase.is_sample ? ' (示例)' : '' }}</span>
                   </div>
+                </template>
+                <div class="test-case-form">
+                  <div class="test-case-header">
+                    <div class="test-case-left-controls">
+                      <el-switch
+                        v-model="testCase.is_sample"
+                        active-text="示例测试用例(对用户可见)"
+                        inactive-text="隐藏测试用例"
+                      ></el-switch>
+                    </div>
                   
                   <el-button
                     type="danger"
@@ -214,8 +232,9 @@
                   </div>
                 </div>
               </div>
-            </el-collapse-item>
-          </el-collapse>
+              </el-collapse-item>
+            </el-collapse>
+          </div>
         </div>
       </el-card>
       
@@ -339,13 +358,24 @@ bool check(std::string input, std::string userOutput, std::string expectedOutput
       fetchProblem: 'problems/fetchProblem',
       createProblem: 'problems/createProblem',
       updateProblem: 'problems/updateProblem',
+      uploadTestCaseFiles: 'problems/uploadTestCaseFiles',
+      fetchProblemTags: 'problems/fetchProblemTags',
       setError: 'setError',
       clearError: 'clearError'
     }),
+    
+    selectAllTestCases(val) {
+      this.formData.test_cases.forEach(testCase => {
+        testCase.selected = val
+      })
+      this.updateSelectedTestCases()
+    },
+    
     // 文件选择变化处理
     handleFileChange(file, fileList) {
       this.uploadFiles = fileList;
     },
+    
     // 上传测试用例文件
     async uploadTestCases() {
       if (!this.uploadFiles.length) {
@@ -663,10 +693,33 @@ h1 {
   margin-bottom: 15px;
 }
 
+.test-cases-container {
+  margin-bottom: 20px;
+}
+
+.test-cases-header {
+  display: flex;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #ebeef5;
+  margin-bottom: 10px;
+}
+
+.select-all-text {
+  font-weight: bold;
+  color: #606266;
+}
+
+.test-case-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
 .test-case-left-controls {
   display: flex;
   align-items: center;
-  gap: 15px;
 }
 
 .test-case-checkbox {
