@@ -5,26 +5,50 @@
     <div class="filters">
       <el-form :inline="true" class="filter-form">
         <el-form-item label="题目">
-          <el-select v-model="filters.problem_id" placeholder="所有题目" clearable filterable>
-            <el-option 
-              v-for="problem in problems" 
-              :key="problem.id" 
-              :label="problem.title" 
-              :value="problem.id" 
-            />
-          </el-select>
+          <el-input 
+            v-model="filters.problemTitle" 
+            placeholder="输入题目关键词" 
+            clearable 
+            class="search-input"
+            @input="searchProblems"
+          >
+            <template #suffix>
+              <el-icon><Search /></el-icon>
+            </template>
+          </el-input>
         </el-form-item>
         
         <el-form-item label="状态">
-          <el-select v-model="filters.status" placeholder="所有状态" clearable>
-            <el-option label="通过" value="accepted" />
-            <el-option label="答案错误" value="wrong_answer" />
-            <el-option label="超时" value="time_limit_exceeded" />
-            <el-option label="内存超限" value="memory_limit_exceeded" />
-            <el-option label="运行时错误" value="runtime_error" />
-            <el-option label="编译错误" value="compilation_error" />
-            <el-option label="等待中" value="pending" />
-            <el-option label="评判中" value="judging" />
+          <el-select 
+            v-model="filters.status" 
+            placeholder="所有状态" 
+            clearable
+            class="status-select"
+          >
+            <el-option label="通过" value="accepted">
+              <span class="status-option"><el-tag type="success" size="small">通过</el-tag></span>
+            </el-option>
+            <el-option label="答案错误" value="wrong_answer">
+              <span class="status-option"><el-tag type="danger" size="small">答案错误</el-tag></span>
+            </el-option>
+            <el-option label="超时" value="time_limit_exceeded">
+              <span class="status-option"><el-tag type="warning" size="small">超时</el-tag></span>
+            </el-option>
+            <el-option label="内存超限" value="memory_limit_exceeded">
+              <span class="status-option"><el-tag type="warning" size="small">内存超限</el-tag></span>
+            </el-option>
+            <el-option label="运行时错误" value="runtime_error">
+              <span class="status-option"><el-tag type="danger" size="small">运行时错误</el-tag></span>
+            </el-option>
+            <el-option label="编译错误" value="compilation_error">
+              <span class="status-option"><el-tag type="danger" size="small">编译错误</el-tag></span>
+            </el-option>
+            <el-option label="等待中" value="pending">
+              <span class="status-option"><el-tag type="info" size="small">等待中</el-tag></span>
+            </el-option>
+            <el-option label="评判中" value="judging">
+              <span class="status-option"><el-tag type="info" size="small">评判中</el-tag></span>
+            </el-option>
           </el-select>
         </el-form-item>
         
@@ -103,19 +127,25 @@
 <script>
 import { mapGetters, mapActions } from 'vuex'
 import api from '@/services/api'
+import { Search } from '@element-plus/icons-vue'
 
 export default {
   name: 'SubmissionListView',
+  components: {
+    Search
+  },
   data() {
     return {
       currentPage: 1,
       pageSize: 10,
       filters: {
         problem_id: '',
+        problemTitle: '', // 新增题目标题关键词搜索
         status: ''
       },
       problems: [],
       problemsMap: {},
+      filteredProblems: [], // 搜索后的过滤题目列表
       loading: false
     }
   },
@@ -192,10 +222,33 @@ export default {
     resetFilters() {
       this.filters = {
         problem_id: '',
+        problemTitle: '',
         status: ''
       }
+      this.filteredProblems = [];
       this.currentPage = 1
       this.loadSubmissions()
+    },
+    
+    // 搜索题目功能
+    searchProblems() {
+      if (!this.filters.problemTitle) {
+        this.filters.problem_id = '';
+        this.filteredProblems = [];
+        return;
+      }
+      
+      const keyword = this.filters.problemTitle.toLowerCase();
+      this.filteredProblems = this.problems.filter(problem => 
+        problem.title.toLowerCase().includes(keyword)
+      );
+      
+      // 如果只有一个符合的题目，自动选中
+      if (this.filteredProblems.length === 1) {
+        this.filters.problem_id = this.filteredProblems[0].id;
+      } else {
+        this.filters.problem_id = '';
+      }
     },
     getProblemTitle(problemId) {
       return this.problemsMap[problemId]?.title || problemId
@@ -253,6 +306,19 @@ export default {
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
+}
+
+.search-input {
+  width: 220px;
+}
+
+.status-select {
+  width: 160px;
+}
+
+.status-option {
+  display: flex;
+  align-items: center;
 }
 
 h1 {

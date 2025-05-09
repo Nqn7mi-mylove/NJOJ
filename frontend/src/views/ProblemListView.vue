@@ -5,7 +5,12 @@
     <div class="filters">
       <el-form :inline="true" class="filter-form">
         <el-form-item label="难度">
-          <el-select v-model="filters.difficulty" placeholder="所有难度" clearable>
+          <el-select 
+            v-model="filters.difficulty" 
+            placeholder="所有难度" 
+            clearable
+            class="wider-select"
+          >
             <el-option label="简单" value="easy" />
             <el-option label="中等" value="medium" />
             <el-option label="困难" value="hard" />
@@ -13,7 +18,14 @@
         </el-form-item>
         
         <el-form-item label="标签">
-          <el-select v-model="filters.tags" multiple placeholder="选择标签" clearable>
+          <el-select 
+            v-model="filters.tags" 
+            multiple 
+            placeholder="选择标签" 
+            clearable
+            class="tag-select"
+            collapse-tags
+          >
             <el-option v-for="tag in availableTags" :key="tag" :label="getChineseTag(tag)" :value="tag" />
           </el-select>
         </el-form-item>
@@ -195,9 +207,15 @@ export default {
 
 <style scoped>
 .problem-list {
-  max-width: 1200px;
-  margin: 0 auto;
   padding: 20px;
+}
+
+.wider-select {
+  width: 160px;
+}
+
+.tag-select {
+  width: 240px;
 }
 
 h1 {

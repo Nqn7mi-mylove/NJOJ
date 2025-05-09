@@ -30,7 +30,18 @@ const actions = {
       }
       
       const response = await api.get(url)
-      commit('SET_SUBMISSIONS', response.data)
+      
+      // 确保接收到的提交记录数组不为空
+      if (response.data && response.data.length > 0) {
+        commit('SET_SUBMISSIONS', response.data)
+      } else {
+        // 尝试再次获取所有提交记录，不用相同的筛选条件
+        if (problemId) {
+          const retryResponse = await api.get(`/submissions?skip=${skip}&limit=${limit}`)
+          commit('SET_SUBMISSIONS', retryResponse.data)
+        }
+      }
+      
       commit('SET_LOADING', false, { root: true })
     } catch (error) {
       commit('SET_LOADING', false, { root: true })

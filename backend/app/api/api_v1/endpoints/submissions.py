@@ -52,6 +52,8 @@ async def create_submission(
         )
     
     submission_dict = submission_in.dict()
+    # 替换自定义ID为系统ObjectId的字符串形式
+    submission_dict["problem_id"] = str(problem["_id"])  # 使用我们查询到的problem对象的_id
     submission_dict["user_id"] = current_user["id"]
     submission_dict["submitted_at"] = datetime.utcnow()
     submission_dict["status"] = JudgeStatus.PENDING
