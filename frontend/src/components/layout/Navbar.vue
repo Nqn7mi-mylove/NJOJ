@@ -205,20 +205,16 @@ export default {
   background-color: #66b1ff;
 }
 
-.admin-link {
-  color: #E6A23C;
-  font-weight: 600;
-}
-
-.admin-link:after {
-  background-color: #E6A23C;
-}
-
+.admin-link,
 .profile-link {
-  color: #67C23A;
+  /* 使用与其他导航链接相同的颜色 */
+  color: #606266;
+  font-weight: 500;
 }
 
+.admin-link:after,
 .profile-link:after {
-  background-color: #67C23A;
+  /* 使用与其他导航链接相同的悬停下划线颜色 */
+  background-color: #409EFF;
 }
 </style>
