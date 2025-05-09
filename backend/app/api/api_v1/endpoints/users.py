@@ -69,12 +69,22 @@ async def read_users(
     """
     Retrieve users. Only admin users can access this endpoint.
     """
+    from fastapi import Response
+    
     users_collection = db.db.users
+    
+    # 获取用户总数
+    total_count = await users_collection.count_documents({})
+    
     cursor = users_collection.find().skip(skip).limit(limit)
     users = await cursor.to_list(length=limit)
     
     # Convert MongoDB _id to string
     for user in users:
         user["id"] = str(user["_id"])
+        del user["_id"]  # 删除_id字段，因为已经复制到id字段
     
+    # 设置响应头并返回用户列表
+    response = Response()
+    response.headers["X-Total-Count"] = str(total_count)
     return users
