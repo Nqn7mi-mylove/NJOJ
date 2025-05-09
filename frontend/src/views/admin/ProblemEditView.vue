@@ -111,12 +111,40 @@
       <el-card class="form-card">
         <template #header>
           <div class="card-header">
-            <span>Test Cases</span>
-            <el-button type="primary" size="small" @click="addTestCase">
-              Add Test Case
-            </el-button>
+            <span>测试用例</span>
+            <div class="test-case-actions">
+              <el-button type="primary" size="small" @click="addTestCase">
+                <i class="el-icon-plus"></i> 添加测试用例
+              </el-button>
+              <el-button v-if="formData.test_cases.length > 0" type="danger" size="small" @click="batchRemoveTestCases" :disabled="selectedTestCases.length === 0">
+                <i class="el-icon-delete"></i> 批量删除 ({{ selectedTestCases.length }})
+              </el-button>
+            </div>
           </div>
         </template>
+        
+        <div class="file-upload-area">
+          <el-upload
+            action="#"
+            :multiple="true"
+            :auto-upload="false"
+            :on-change="handleFileChange"
+            :file-list="uploadFiles"
+            accept=".in,.out"
+            drag
+            class="test-case-uploader"
+          >
+            <i class="el-icon-upload"></i>
+            <div class="el-upload__text">拖拽测试用例文件到此处或 <em>点击选择</em></div>
+            <div class="el-upload__tip">请选择成对的 .in 和 .out 文件，文件名应相同（仅后缀不同）</div>
+          </el-upload>
+          
+          <div class="upload-actions" v-if="hasFilesToUpload">
+            <el-button type="success" @click="uploadTestCases">
+              <i class="el-icon-upload2"></i> 导入选择的文件
+            </el-button>
+          </div>
+        </div>
         
         <el-alert
           v-if="formData.test_cases.length === 0"
@@ -124,6 +152,7 @@
           type="warning"
           :closable="false"
           show-icon
+          style="margin-top: 15px;"
         ></el-alert>
         
         <div class="test-cases">
@@ -131,16 +160,23 @@
             <el-collapse-item
               v-for="(testCase, index) in formData.test_cases"
               :key="index"
-              :title="`Test Case #${index + 1}${testCase.is_sample ? ' (Sample)' : ''}`"
+              :title="`测试用例 #${index + 1}${testCase.is_sample ? ' (示例)' : ''}`"
               :name="index"
             >
               <div class="test-case-form">
                 <div class="test-case-header">
-                  <el-switch
-                    v-model="testCase.is_sample"
-                    active-text="Sample test case (visible to users)"
-                    inactive-text="Hidden test case"
-                  ></el-switch>
+                  <div class="test-case-left-controls">
+                    <el-checkbox 
+                      v-model="testCase.selected" 
+                      @change="updateSelectedTestCases"
+                      class="test-case-checkbox"
+                    ></el-checkbox>
+                    <el-switch
+                      v-model="testCase.is_sample"
+                      active-text="示例测试用例(对用户可见)"
+                      inactive-text="隐藏测试用例"
+                    ></el-switch>
+                  </div>
                   
                   <el-button
                     type="danger"
@@ -148,7 +184,7 @@
                     @click.prevent="removeTestCase(index)"
                     class="delete-test-case"
                   >
-                    Delete
+                    删除
                   </el-button>
                 </div>
                 
@@ -203,9 +239,8 @@
           
           <div class="code-editor-container">
             <CodeEditor 
-              v-model:code="formData.special_judge_code" 
+              :code="formData.special_judge_code"
               language="cpp"
-              theme="vs-dark"
               @change="onSpecialJudgeCodeChange"
             />
           </div>
@@ -226,6 +261,7 @@
 import { mapGetters, mapActions } from 'vuex'
 import MarkdownRenderer from '@/components/markdown/MarkdownRenderer.vue'
 import CodeEditor from '@/components/editor/CodeEditor.vue'
+import api from '@/services/api'
 
 export default {
   name: 'ProblemEditView',
@@ -235,6 +271,11 @@ export default {
   },
   data() {
     return {
+      loading: false,
+      saving: false,
+      uploadFiles: [], // 上传的测试用例文件
+      uploadLoading: false, // 上传测试用例加载状态
+      selectedTestCases: [], // 选中的测试用例索引
       formData: {
         custom_id: '',
         title: '',
@@ -246,28 +287,35 @@ export default {
         is_public: true,
         test_cases: [],
         has_special_judge: false,
-        special_judge_code: `// Special judge template (C++)\n\n#include <iostream>\n#include <fstream>\n#include <string>\n\nusing namespace std;\n\n// The special judge should read these files:\n// - input.txt: The input of the test case\n// - expected_output.txt: The expected output\n// - output.txt: The contestant's output\n\n// Return exit code 0 if the output is correct, non-zero otherwise\n\nint main() {\n    ifstream input_file("input.txt");\n    ifstream expected_output_file("expected_output.txt");\n    ifstream output_file("output.txt");\n    \n    // Add your custom validation logic here\n    // Example: Check if the contestant's output is correct\n    \n    return 0; // 0 means correct, any other value means wrong answer\n}`
+        special_judge_code: `// 这是一个特殊评测函数样例 (C++)
+// 参数: 
+// - input: 测试输入
+// - userOutput: 用户程序输出
+// - expectedOutput: 期望输出
+// 返回: 用户代码是否通过测试
+bool check(std::string input, std::string userOutput, std::string expectedOutput) {
+  // 在这里实现特殊评测逻辑
+  return userOutput == expectedOutput;
+}`
       },
+      availableTags: [
+        'Array', 'String', 'Hash Table', 'Dynamic Programming',
+        'Math', 'Greedy', 'Sorting', 'Depth-First Search',
+        'Binary Search', 'Tree', 'Breadth-First Search', 'Graph'
+      ],
+      showPreview: false,
+      activeTestCases: [],
       rules: {
         title: [
           { required: true, message: 'Please enter a title', trigger: 'blur' }
         ],
         description: [
-          { required: true, message: 'Please provide a description', trigger: 'blur' }
+          { required: true, message: 'Please enter a description', trigger: 'blur' }
         ],
         difficulty: [
           { required: true, message: 'Please select a difficulty level', trigger: 'change' }
         ]
-      },
-      availableTags: [
-        'array', 'string', 'hash-table', 'dynamic-programming', 
-        'math', 'sorting', 'greedy', 'depth-first-search', 
-        'binary-search', 'tree', 'graph', 'breadth-first-search'
-      ],
-      showPreview: false,
-      activeTestCases: [],
-      loading: false,
-      saving: false
+      }
     }
   },
   computed: {
@@ -281,6 +329,9 @@ export default {
     },
     problemId() {
       return this.$route.params.id
+    },
+    hasFilesToUpload() {
+      return this.uploadFiles.length > 0
     }
   },
   methods: {
@@ -291,6 +342,49 @@ export default {
       setError: 'setError',
       clearError: 'clearError'
     }),
+    // 文件选择变化处理
+    handleFileChange(file, fileList) {
+      this.uploadFiles = fileList;
+    },
+    // 上传测试用例文件
+    async uploadTestCases() {
+      if (!this.uploadFiles.length) {
+        this.$message.warning('请先选择测试用例文件')
+        return
+      }
+
+      this.uploadLoading = true
+      try {
+        const formData = new FormData()
+        this.uploadFiles.forEach(file => {
+          formData.append('files', file.raw)
+        })
+
+        const response = await api.post('/test-cases/upload', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        })
+
+        // 添加上传的测试用例到当前表单
+        if (response.data && response.data.length) {
+          response.data.forEach(testCase => {
+            this.formData.test_cases.push(testCase)
+          })
+          this.$message.success(`成功导入 ${response.data.length} 个测试用例`)
+          
+          // 清空上传列表
+          this.uploadFiles = []
+        } else {
+          this.$message.warning('没有找到有效的测试用例')
+        }
+      } catch (error) {
+        console.error('上传测试用例失败', error)
+        this.$message.error('上传测试用例失败: ' + (error.response?.data?.detail || error.message))
+      } finally {
+        this.uploadLoading = false
+      }
+    },
     async loadProblem() {
       if (!this.isEditMode) return
       
@@ -346,7 +440,8 @@ export default {
       const newTestCase = {
         input: '',
         output: '',
-        is_sample: false
+        is_sample: false,
+        selected: false
       }
       
       this.formData.test_cases.push(newTestCase)
@@ -359,6 +454,43 @@ export default {
       this.activeTestCases = this.activeTestCases
         .filter(i => i !== index)
         .map(i => i > index ? i - 1 : i)
+        
+      // Update selected test cases
+      this.updateSelectedTestCases()
+    },
+    updateSelectedTestCases() {
+      // 更新选中的测试用例索引列表
+      this.selectedTestCases = this.formData.test_cases
+        .map((testCase, index) => testCase.selected ? index : -1)
+        .filter(index => index !== -1)
+    },
+    batchRemoveTestCases() {
+      if (this.selectedTestCases.length === 0) return
+      
+      // 确认删除
+      this.$confirm(`确定要删除选中的 ${this.selectedTestCases.length} 个测试用例吗？`, '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        // 从大到小排序，避免删除时索引变化
+        const indexesToRemove = [...this.selectedTestCases].sort((a, b) => b - a)
+        
+        // 删除选中的测试用例
+        indexesToRemove.forEach(index => {
+          this.formData.test_cases.splice(index, 1)
+        })
+        
+        // 更新激活的测试用例
+        this.activeTestCases = []
+        
+        // 清空选中列表
+        this.selectedTestCases = []
+        
+        this.$message.success('已删除选中的测试用例')
+      }).catch(() => {
+        // 取消删除
+      })
     },
     onSpecialJudgeCodeChange(value) {
       this.formData.special_judge_code = value
@@ -481,12 +613,47 @@ h1 {
   overflow-y: auto;
 }
 
-.test-cases {
+.test-case-actions {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.test-case-actions .el-button {
+  margin: 0;
+}
+
+.file-upload-area {
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  padding: 15px;
+  margin-bottom: 15px;
+}
+
+.test-case-uploader {
+  width: 100%;
+}
+
+.test-case-uploader :deep(.el-upload-dragger) {
+  width: 100%;
+  height: auto;
+  padding: 20px;
+}
+
+.upload-actions {
+  display: flex;
+  justify-content: center;
   margin-top: 15px;
 }
 
+
+.el-collapse-item__content {
+  padding-bottom: 20px;
+}
+
 .test-case-form {
-  padding: 10px 0;
+  width: 100%;
 }
 
 .test-case-header {
@@ -496,10 +663,25 @@ h1 {
   margin-bottom: 15px;
 }
 
+.test-case-left-controls {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.test-case-checkbox {
+  margin-right: 0;
+}
+
 .test-case-content {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  flex-direction: column;
   gap: 20px;
+}
+
+.test-case-input,
+.test-case-output {
+  width: 100%;
 }
 
 .input-header,
