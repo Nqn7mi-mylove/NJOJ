@@ -16,24 +16,24 @@
     <div class="right-section">
       <!-- 导航条中的管理员和个人资料链接 -->
       <template v-if="isLoggedIn">
-        <div class="nav-links">
+        <div class="nav-links user-nav-links">
           <router-link v-if="isAdmin" to="/admin" class="nav-link admin-link">管理后台</router-link>
           <router-link to="/profile" class="nav-link profile-link">个人资料</router-link>
-        </div>
         
-        <!-- 用户菜单 -->
-        <div class="user-menu">
-          <el-dropdown trigger="click">
-            <span class="user-dropdown">
-              <span class="username">{{ currentUser.username }}</span>
-              <i class="el-icon-arrow-down"></i>
-            </span>
-            <template #dropdown>
-              <el-dropdown-menu>
-                <el-dropdown-item @click="logout">退出登录</el-dropdown-item>
-              </el-dropdown-menu>
-            </template>
-          </el-dropdown>
+          <!-- 用户菜单 -->
+          <div class="user-menu">
+            <el-dropdown trigger="click">
+              <span class="user-dropdown">
+                <span class="username">{{ currentUser.username }}</span>
+                <i class="el-icon-arrow-down"></i>
+              </span>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item @click="logout">退出登录</el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+          </div>
         </div>
       </template>
       <template v-else>
@@ -104,6 +104,7 @@ export default {
 
 .nav-links {
   display: flex;
+  align-items: center;
   gap: 30px;
 }
 
@@ -141,13 +142,17 @@ export default {
 .right-section {
   display: flex;
   align-items: center;
-  gap: 20px;
+}
+
+.user-nav-links {
+  align-items: center;
+  margin-right: 0;
 }
 
 .user-menu {
   display: flex;
   align-items: center;
-  gap: 10px;
+  margin-left: 25px;
 }
 
 .user-info {
@@ -169,8 +174,10 @@ export default {
 .username {
   font-weight: 500;
   color: inherit;
-  margin-right: 5px;
+  margin-right: 8px;
   font-size: 16px;
+  display: inline-block;
+  vertical-align: middle;
 }
 
 .auth-buttons {
