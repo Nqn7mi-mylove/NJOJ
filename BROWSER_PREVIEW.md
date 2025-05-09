@@ -10,7 +10,7 @@
 
 ```bash
 # 检查 MongoDB 容器是否运行
-docker ps | grep mongodb
+docker ps -a | grep mongodb
 
 # 如果没有运行，则启动 MongoDB 容器
 docker run -d --name mongodb -p 27017:27017 mongo:4.4

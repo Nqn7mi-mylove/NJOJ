@@ -23,14 +23,27 @@ async def create_submission(
     submissions_collection = db.db.submissions
     problems_collection = db.db.problems
     
-    # Check if problem exists
-    problem = await problems_collection.find_one({
-        "_id": ObjectId(submission_in.problem_id),
-        "$or": [
-            {"is_public": True},
-            {"author_id": current_user["id"]}
-        ]
-    })
+    # 处理自定义ID和系统ID
+    query = {}
+    try:
+        # 尝试作为ObjectId处理
+        if ObjectId.is_valid(submission_in.problem_id):
+            query["_id"] = ObjectId(submission_in.problem_id)
+        else:
+            # 尝试作为自定义ID处理
+            query["custom_id"] = submission_in.problem_id
+    except Exception:
+        # 作为自定义ID处理
+        query["custom_id"] = submission_in.problem_id
+            
+    # 添加权限过滤
+    query["$or"] = [
+        {"is_public": True},
+        {"author_id": current_user["id"]}
+    ]
+    
+    # 查询问题
+    problem = await problems_collection.find_one(query)
     
     if not problem:
         raise HTTPException(
@@ -57,9 +70,9 @@ async def create_submission(
         current_user["id"]
     )
     
-    # Increment submission count
+    # Increment submission count - 使用已找到的problem对象的ID
     await problems_collection.update_one(
-        {"_id": ObjectId(submission_in.problem_id)},
+        {"_id": problem["_id"]},
         {"$inc": {"submission_count": 1}}
     )
     
