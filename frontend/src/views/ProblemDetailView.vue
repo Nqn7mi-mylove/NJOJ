@@ -382,6 +382,11 @@ export default {
   gap: 10px;
 }
 
+.language-select span {
+  white-space: nowrap;
+  min-width: 80px;
+}
+
 .code-editor {
   height: 500px;
   margin-bottom: 20px;
