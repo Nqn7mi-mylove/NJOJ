@@ -61,9 +61,8 @@
 ### 1. 克隆仓库
 
 ```bash
-git clone https://github.com/yourusername/online-judge.git
-cd online-judge
-```
+git clone https://github.com/Nqn7mi-mylove/NJOJ.git
+cd NJOJ
 
 ### 2. 后端设置
 
@@ -228,10 +227,7 @@ online-judge/
 
 可以在管理界面中定义和管理题目标签，用于对题目进行分类。
 
-## 许可证
+## 一些闲话
 
-[MIT License](LICENSE)
-
-## 联系方式
-
+本项目为本人毕业设计，由Windsurf辅助开发。
 如有问题或建议，请通过Issues提交反馈。
