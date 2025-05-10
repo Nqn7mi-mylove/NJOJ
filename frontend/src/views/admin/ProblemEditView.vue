@@ -537,13 +537,26 @@ bool check(std::string input, std::string userOutput, std::string expectedOutput
         
         this.saving = true
         
-        // Prepare the problem data
-        const problemData = { ...this.formData }
+        // Prepare the problem data - 创建深拷贝避免影响原始数据
+        const problemData = JSON.parse(JSON.stringify(this.formData))
+        
+        // 清理测试用例数据，确保格式与后端模型匹配
+        // 去除selected等前端专用字段，保证数据格式正确
+        problemData.test_cases = problemData.test_cases.map(tc => ({
+          input: tc.input,
+          output: tc.output,
+          is_sample: tc.is_sample || false
+        }))
         
         // Split test cases into regular and sample
         problemData.sample_test_cases = problemData.test_cases
           .filter(tc => tc.is_sample)
           .map(tc => ({ input: tc.input, output: tc.output, is_sample: true }))
+        
+        // 清理描述中的空行等，优化存储
+        if (problemData.description) {
+          problemData.description = problemData.description.trim();
+        }
         
         // If not using special judge, set the code to null
         if (!problemData.has_special_judge) {
@@ -569,7 +582,11 @@ bool check(std::string input, std::string userOutput, std::string expectedOutput
               ? 'Problem updated successfully'
               : 'Problem created successfully'
           )
-          this.$router.push('/admin/problems')
+          
+          // 延迟跳转，给用户一点时间看到成功消息
+          setTimeout(() => {
+            this.$router.push('/admin/problems')
+          }, 1000)
         } else {
           this.$message.error(
             this.isEditMode
@@ -579,6 +596,7 @@ bool check(std::string input, std::string userOutput, std::string expectedOutput
         }
       } catch (error) {
         console.error('Form validation failed', error)
+        this.$message.error(`表单验证失败: ${error.message || '未知错误'}`)
       } finally {
         this.saving = false
       }

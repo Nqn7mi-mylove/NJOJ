@@ -74,6 +74,17 @@ async def update_problem(
                 detail=f"Problem with custom ID '{update_data['custom_id']}' already exists"
             )
     
+    # 特殊处理test_cases，确保正确更新数组
+    if "test_cases" in update_data and update_data["test_cases"]:
+        # MongoDB $set操作可能无法正确处理嵌套数组，使用$set + $unset的组合操作
+        
+        # 首先将原有的test_cases数组删除
+        await problems_collection.update_one(
+            {"_id": ObjectId(problem_id)},
+            {"$unset": {"test_cases": ""}}
+        )
+    
+    # 执行更新    
     await problems_collection.update_one(
         {"_id": ObjectId(problem_id)},
         {"$set": update_data}

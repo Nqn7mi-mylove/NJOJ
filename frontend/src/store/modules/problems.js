@@ -44,12 +44,18 @@ const actions = {
     commit('SET_LOADING', true, { root: true })
     try {
       const response = await api.get(`/problems/${id}`)
+      
+      // 确保test_cases是数组
+      if (!response.data.test_cases) {
+        response.data.test_cases = [];
+      }
+      
       commit('SET_CURRENT_PROBLEM', response.data)
       commit('SET_LOADING', false, { root: true })
       return response.data
     } catch (error) {
       commit('SET_LOADING', false, { root: true })
-      commit('SET_ERROR', error.response?.data?.detail || 'Failed to fetch problem', { root: true })
+      commit('SET_ERROR', error.response?.data?.detail || '获取问题详情失败', { root: true })
       return null
     }
   },

@@ -45,6 +45,7 @@ class Problem(ProblemBase):
     author_id: str
     submission_count: int = 0
     accepted_count: int = 0
+    test_cases: List[TestCase] = []  # 添加测试用例字段
     sample_test_cases: List[TestCase] = []
 
     class Config:
