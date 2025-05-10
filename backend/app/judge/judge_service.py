@@ -355,9 +355,10 @@ async def _run_test_case(temp_dir: str, test_case: dict, time_limit: int, memory
             "--user", "root",
             "-m", f"{memory_limit}m",
             "--memory-swap", f"{memory_limit}m",
+            "--name", f"judge-container-{test_case['id']}",
             "judge-env", 
             "bash", "-c", 
-            f"cd /judge && time -p timeout {time_limit/1000} ./solution < input.txt > output.txt 2> time.txt"
+            f"cd /judge && /usr/bin/time -v timeout {time_limit/1000} ./solution < input.txt > output.txt 2> time_stats.txt"
         ]
         
         # 运行测试用例
@@ -365,15 +366,15 @@ async def _run_test_case(temp_dir: str, test_case: dict, time_limit: int, memory
         
         # 解析运行结果
         output_file = os.path.join(temp_dir, "output.txt")
-        time_file = os.path.join(temp_dir, "time.txt")
+        time_stats_file = os.path.join(temp_dir, "time_stats.txt")
         
         # 检查是否存在输出文件
         if not os.path.exists(output_file):
             return {
                 "test_case_id": test_case["id"],
-                "status": JudgeStatus.RUNTIME_ERROR,
+                "status": JudgeStatus.SYSTEM_ERROR,
                 "time_used": 0,
-                "memory_used": 0,
+                "memory_used": memory_used,
                 "error_message": "No output file produced",
                 "output": ""
             }
@@ -384,12 +385,20 @@ async def _run_test_case(temp_dir: str, test_case: dict, time_limit: int, memory
         
         # 计算时间和内存使用
         time_used = 0
-        if os.path.exists(time_file):
-            with open(time_file, "r") as f:
+        memory_used = 0
+        if os.path.exists(time_stats_file):
+            with open(time_stats_file, "r") as f:
                 time_content = f.read()
-                time_match = re.search(r"real\s+(\d+\.\d+)", time_content)
+                
+                # 获取执行时间（秒）
+                time_match = re.search(r"User time \(seconds\): (\d+\.\d+)", time_content)
                 if time_match:
                     time_used = int(float(time_match.group(1)) * 1000)  # 转换为毫秒
+                    
+                # 获取最大驻留集大小（内存使用）
+                memory_match = re.search(r"Maximum resident set size \(kbytes\): (\d+)", time_content)
+                if memory_match:
+                    memory_used = int(memory_match.group(1))  # 已经是KB单位
         
         # 检查时间限制
         if time_used > time_limit:
@@ -397,7 +406,7 @@ async def _run_test_case(temp_dir: str, test_case: dict, time_limit: int, memory
                 "test_case_id": test_case["id"],
                 "status": JudgeStatus.TIME_LIMIT_EXCEEDED,
                 "time_used": time_used,
-                "memory_used": 0,  # 无法准确获取内存使用
+                "memory_used": memory_used,
                 "error_message": f"Time limit exceeded: {time_used}ms > {time_limit}ms",
                 "output": actual_output[:100] + "..." if len(actual_output) > 100 else actual_output
             }
@@ -408,7 +417,7 @@ async def _run_test_case(temp_dir: str, test_case: dict, time_limit: int, memory
                 "test_case_id": test_case["id"],
                 "status": JudgeStatus.RUNTIME_ERROR,
                 "time_used": time_used,
-                "memory_used": 0,
+                "memory_used": memory_used,
                 "error_message": run_result.stderr,
                 "output": actual_output[:100] + "..." if len(actual_output) > 100 else actual_output
             }
@@ -432,7 +441,7 @@ async def _run_test_case(temp_dir: str, test_case: dict, time_limit: int, memory
                     "test_case_id": test_case["id"],
                     "status": JudgeStatus.ACCEPTED,
                     "time_used": time_used,
-                    "memory_used": 0,
+                    "memory_used": memory_used,
                     "error_message": None,
                     "output": actual_output[:100] + "..." if len(actual_output) > 100 else actual_output
                 }
@@ -441,7 +450,7 @@ async def _run_test_case(temp_dir: str, test_case: dict, time_limit: int, memory
                     "test_case_id": test_case["id"],
                     "status": JudgeStatus.WRONG_ANSWER,
                     "time_used": time_used,
-                    "memory_used": 0,
+                    "memory_used": memory_used,
                     "error_message": sj_result.stdout or sj_result.stderr,
                     "output": actual_output[:100] + "..." if len(actual_output) > 100 else actual_output
                 }
@@ -455,7 +464,7 @@ async def _run_test_case(temp_dir: str, test_case: dict, time_limit: int, memory
                     "test_case_id": test_case["id"],
                     "status": JudgeStatus.ACCEPTED,
                     "time_used": time_used,
-                    "memory_used": 0,
+                    "memory_used": memory_used,
                     "error_message": None,
                     "output": actual_output[:100] + "..." if len(actual_output) > 100 else actual_output
                 }
@@ -464,7 +473,7 @@ async def _run_test_case(temp_dir: str, test_case: dict, time_limit: int, memory
                     "test_case_id": test_case["id"],
                     "status": JudgeStatus.WRONG_ANSWER,
                     "time_used": time_used,
-                    "memory_used": 0,
+                    "memory_used": memory_used,
                     "error_message": "Output doesn't match expected output",
                     "output": actual_output[:100] + "..." if len(actual_output) > 100 else actual_output
                 }
@@ -472,8 +481,8 @@ async def _run_test_case(temp_dir: str, test_case: dict, time_limit: int, memory
         return {
             "test_case_id": test_case["id"],
             "status": JudgeStatus.SYSTEM_ERROR,
-            "time_used": 0,
-            "memory_used": 0,
+            "time_used": time_used,
+            "memory_used": memory_used,
             "error_message": str(e),
             "output": ""
         }
