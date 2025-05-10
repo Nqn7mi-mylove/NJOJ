@@ -63,6 +63,7 @@
 ```bash
 git clone https://github.com/Nqn7mi-mylove/NJOJ.git
 cd NJOJ
+```
 
 ### 2. 后端设置
 
