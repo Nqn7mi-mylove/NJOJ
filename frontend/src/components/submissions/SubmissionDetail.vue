@@ -3,32 +3,32 @@
     <div class="submission-header">
       <div class="submission-info">
         <div class="info-item">
-          <span class="label">Status:</span>
+          <span class="label">状态:</span>
           <el-tag :type="getStatusType(submission.status)">
             {{ formatStatus(submission.status) }}
           </el-tag>
         </div>
         <div class="info-item">
-          <span class="label">Language:</span>
+          <span class="label">编程语言:</span>
           <span>{{ submission.language }}</span>
         </div>
         <div class="info-item">
-          <span class="label">Time:</span>
+          <span class="label">执行时间:</span>
           <span>{{ submission.time_used }} ms</span>
         </div>
         <div class="info-item">
-          <span class="label">Memory:</span>
+          <span class="label">内存占用:</span>
           <span>{{ submission.memory_used }} KB</span>
         </div>
         <div class="info-item">
-          <span class="label">Submitted At:</span>
+          <span class="label">提交时间:</span>
           <span>{{ formatDate(submission.submitted_at) }}</span>
         </div>
       </div>
     </div>
 
     <div class="code-section">
-      <h3>Submitted Code</h3>
+      <h3>提交的代码</h3>
       <div class="code-viewer">
         <CodeEditor 
           :code="submission.code" 
@@ -40,44 +40,44 @@
     </div>
 
     <div v-if="submission.error_message" class="error-section">
-      <h3>Error Message</h3>
+      <h3>错误信息</h3>
       <div class="error-message">
         <pre>{{ submission.error_message }}</pre>
       </div>
     </div>
 
     <div v-if="submission.test_case_results && submission.test_case_results.length > 0" class="results-section">
-      <h3>Test Case Results</h3>
+      <h3>测试用例结果</h3>
       <el-collapse>
         <el-collapse-item 
           v-for="(result, index) in submission.test_case_results" 
-          :key="result.test_case_id"
-          :title="`Test Case #${index + 1}: ${formatStatus(result.status)}`"
+          :key="result.test_case_id || index"
+          :title="`测试用例 #${index + 1}: ${formatStatus(result.status)}`"
           :name="index"
         >
           <div class="test-case-result">
             <div class="result-info">
               <div class="info-item">
-                <span class="label">Status:</span>
+                <span class="label">状态:</span>
                 <el-tag :type="getStatusType(result.status)">{{ formatStatus(result.status) }}</el-tag>
               </div>
               <div class="info-item">
-                <span class="label">Time Used:</span>
+                <span class="label">执行时间:</span>
                 <span>{{ result.time_used }} ms</span>
               </div>
               <div class="info-item">
-                <span class="label">Memory Used:</span>
+                <span class="label">内存占用:</span>
                 <span>{{ result.memory_used }} KB</span>
               </div>
             </div>
             
             <div v-if="result.output" class="output-section">
-              <h4>Output:</h4>
+              <h4>输出结果:</h4>
               <pre>{{ result.output }}</pre>
             </div>
             
             <div v-if="result.error_message" class="error-section">
-              <h4>Error:</h4>
+              <h4>错误信息:</h4>
               <pre>{{ result.error_message }}</pre>
             </div>
           </div>
@@ -87,7 +87,7 @@
 
     <!-- 大模型评估结果部分 -->
     <div v-if="submission.llm_evaluation" class="llm-evaluation-section">
-      <h3>AI Code Evaluation</h3>
+      <h3>AI代码评估</h3>
 
       <div class="evaluation-container">
         <!-- 评估失败消息 -->
@@ -103,11 +103,11 @@
 
         <!-- 正常显示评估结果 -->
         <template v-else>
-          <!-- Error Analysis Section (New) -->
+          <!-- 错误分析部分 -->
           <div v-if="submission.llm_evaluation.error_types && submission.llm_evaluation.error_types.length > 0" class="error-analysis">
-            <h4>Error Analysis</h4>
+            <h4>错误分析</h4>
             <div class="error-types">
-              <span class="label">Error Types:</span>
+              <span class="label">错误类型:</span>
               <el-tag 
                 v-for="(error, index) in submission.llm_evaluation.error_types" 
                 :key="`error-type-${index}`"
@@ -124,7 +124,7 @@
             </div>
 
             <div v-if="submission.llm_evaluation.error_details && submission.llm_evaluation.error_details.length > 0" class="error-details">
-              <h5>Detailed Analysis</h5>
+              <h5>详细分析</h5>
               <div v-for="(detail, index) in submission.llm_evaluation.error_details" :key="`error-detail-${index}`" class="error-detail-item">
                 <div class="error-detail-type">
                   <strong>{{ detail.type }}</strong>
@@ -133,7 +133,7 @@
                   {{ detail.description }}
                 </div>
                 <div v-if="detail.test_cases && detail.test_cases.length > 0" class="error-test-cases">
-                  <span class="label">Affected Test Cases:</span>
+                  <span class="label">受影响的测试用例:</span>
                   <el-tag
                     v-for="(testCase, tcIndex) in detail.test_cases"
                     :key="`tc-${index}-${tcIndex}`"
@@ -147,25 +147,30 @@
             </div>
           </div>
 
+          <!-- 总体评估部分 - 改进的UI -->
           <div v-if="submission.llm_evaluation.summary" class="evaluation-summary">
-            <h4>Overall Summary</h4>
-            <div class="summary-content">
-              <p>{{ submission.llm_evaluation.summary }}</p>
-              <!-- 已删除分数显示 -->
-            </div>
+            <h4>总体评估</h4>
+            <el-card shadow="hover" class="summary-card">
+              <div class="summary-content">
+                <i class="el-icon-document summary-icon"></i>
+                <p>{{ submission.llm_evaluation.summary }}</p>
+              </div>
+            </el-card>
           </div>
           
-          <!-- 已删除不必要的折叠面板 -->
-          
+          <!-- 改进建议部分 - 改进的UI -->
           <div v-if="submission.llm_evaluation.improvement_suggestions && submission.llm_evaluation.improvement_suggestions.length > 0" class="improvement-suggestions">
-            <h4>Improvement Suggestions</h4>
-            <ul>
-              <li v-for="(suggestion, index) in submission.llm_evaluation.improvement_suggestions" :key="`suggestion-${index}`">{{ suggestion }}</li>
-            </ul>
+            <h4>改进建议</h4>
+            <el-card shadow="hover" class="suggestions-card">
+              <ul class="suggestions-list">
+                <li v-for="(suggestion, index) in submission.llm_evaluation.improvement_suggestions" :key="`suggestion-${index}`" class="suggestion-item">
+                  <i class="el-icon-light-bulb suggestion-icon"></i>
+                  <span>{{ suggestion }}</span>
+                </li>
+              </ul>
+            </el-card>
           </div>
         </template>
-        
-        <!-- 已移除LLM错误显示元素 -->
       </div>
     </div>
   </div>
@@ -187,13 +192,12 @@ export default {
   },
   data() {
     return {
-      activeNames: [], // 已删除所有折叠面板
+      activeNames: [],
       loading: true,
       error: null
     }
   },
   computed: {
-    // 检查评估是否失败
     evaluationFailed() {
       const evaluation = this.submission.llm_evaluation;
       if (!evaluation) return false;
@@ -201,13 +205,11 @@ export default {
       return (
         (evaluation.summary && evaluation.summary.includes('评估失败')) ||
         evaluation.error ||
-        // 修改判断逻辑，适应新的数据结构，不再依赖code_standard字段
         (evaluation.overall_score === '0' && 
          (!evaluation.improvement_suggestions || 
           !evaluation.improvement_suggestions.length))
       );
-    },
-    // 已移除与Code Standard、Code Logic和Code Efficiency相关的计算属性
+    }
   },
   methods: {
     getStatusType(status) {
@@ -222,7 +224,7 @@ export default {
         judging: 'info',
         system_error: 'danger'
       }
-      return types[status] || 'info'
+      return types[status.toLowerCase()] || 'info'
     },
     formatStatus(status) {
       const formatted = {
@@ -236,7 +238,7 @@ export default {
         judging: 'Judging',
         system_error: 'System Error'
       }
-      return formatted[status] || status
+      return formatted[status.toLowerCase()] || status
     },
     formatDate(timestamp) {
       const date = new Date(timestamp)
@@ -244,25 +246,28 @@ export default {
     },
     getEditorLanguage(language) {
       const languages = {
-        cpp: 'cpp'
-        // Add more language mappings as needed
+        'cpp': 'cpp',
+        'c++': 'cpp',
+        'python': 'python',
+        'python3': 'python',
+        'java': 'java',
+        'javascript': 'javascript',
+        'js': 'javascript'
       }
-      return languages[language] || language
+      return languages[language.toLowerCase()] || 'plaintext'
     },
     getErrorTagType(errorType) {
-      // 根据错误类型返回不同的标签样式
-      const typeMap = {
-        'WA': 'danger',    // 错误答案
-        'TLE': 'warning',  // 超时
-        'MLE': 'warning',  // 内存超限
-        'RE': 'danger',    // 运行时错误
-        'CE': 'danger',    // 编译错误
-        'AC': 'success'    // 通过
-      }
-      
-      // 如果完全匹配则返回，否则模糊匹配
-      if (typeMap[errorType]) {
-        return typeMap[errorType]
+      // 直接匹配
+      if (errorType === 'Wrong Answer' || errorType === '错误答案') {
+        return 'danger'
+      } else if (errorType === 'Time Limit Exceeded' || errorType === '超时') {
+        return 'warning'
+      } else if (errorType === 'Memory Limit Exceeded' || errorType === '内存超限') {
+        return 'warning'
+      } else if (errorType === 'Runtime Error' || errorType === '运行时错误') {
+        return 'danger'
+      } else if (errorType === 'Compilation Error' || errorType === '编译错误') {
+        return 'danger'
       }
       
       // 模糊匹配
@@ -282,8 +287,9 @@ export default {
 
 <style scoped>
 .submission-detail {
-  background-color: #fff;
   padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
 }
 
 .submission-header {
@@ -295,148 +301,103 @@ export default {
 .submission-info {
   display: flex;
   flex-wrap: wrap;
-  gap: 20px;
+  gap: 15px;
 }
 
 .info-item {
   display: flex;
   align-items: center;
-  gap: 8px;
 }
 
 .label {
-  font-weight: bold;
+  font-weight: 500;
+  margin-right: 8px;
   color: #606266;
 }
 
 .code-section,
 .error-section,
-.results-section {
-  margin-bottom: 30px;
+.results-section,
+.llm-evaluation-section {
+  margin-top: 25px;
 }
 
 h3 {
-  margin-top: 0;
-  margin-bottom: 15px;
+  font-size: 1.4rem;
   color: #303133;
-  font-size: 18px;
+  margin-bottom: 15px;
+  font-weight: 500;
+}
+
+h4 {
+  font-size: 1.2rem;
+  color: #303133;
+  margin: 20px 0 10px;
+  font-weight: 500;
 }
 
 .code-viewer {
-  height: 400px;
-  border: 1px solid #dcdfe6;
   border-radius: 4px;
   overflow: hidden;
+  border: 1px solid #eaeaea;
+  height: 400px;
 }
 
-.error-message,
-.output-section pre,
-.error-section pre {
-  background-color: #f5f7fa;
+.error-message {
+  background-color: #fef0f0;
+  color: #f56c6c;
   padding: 15px;
   border-radius: 4px;
   overflow-x: auto;
-  font-family: monospace;
-  margin: 0;
 }
 
-.error-message,
-.error-section pre {
-  color: #f56c6c;
-  background-color: #fef0f0;
+.error-message pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .test-case-result {
-  padding: 15px;
+  padding: 10px 0;
 }
 
 .result-info {
   display: flex;
   flex-wrap: wrap;
-  gap: 15px;
+  gap: 12px;
   margin-bottom: 15px;
 }
 
-h4 {
+.output-section,
+.error-section {
   margin-top: 15px;
-  margin-bottom: 10px;
-  color: #303133;
-  font-size: 16px;
 }
 
-.llm-evaluation-section {
-  margin-bottom: 30px;
+.output-section h4,
+.error-section h4 {
+  font-size: 1rem;
+  margin-bottom: 8px;
 }
 
-.evaluation-card {
-  padding: 20px;
-}
-
-.evaluation-summary {
-  margin-bottom: 20px;
-}
-
-.summary-content {
-  padding: 15px;
-  border: 1px solid #dcdfe6;
+.output-section pre,
+.error-section pre {
+  background-color: #f5f7fa;
+  padding: 12px;
   border-radius: 4px;
-}
-
-/* 已删除分数显示样式 */
-
-.evaluation-details {
-  margin-bottom: 20px;
-}
-
-.evaluation-dimension {
-  padding: 15px;
-  border: 1px solid #dcdfe6;
-  border-radius: 4px;
-}
-
-.pros,
-.cons {
-  margin-bottom: 15px;
-}
-
-.pros ul,
-.cons ul {
-  list-style: none;
-  padding: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-x: auto;
   margin: 0;
 }
 
-.pros li,
-.cons li {
-  padding: 5px;
-  border-bottom: 1px solid #dcdfe6;
+/* LLM评估相关样式 */
+.evaluation-container {
+  margin-top: 10px;
 }
 
-.pros li:last-child,
-.cons li:last-child {
-  border-bottom: none;
-}
-
-.improvement-suggestions {
+.evaluation-error {
   margin-bottom: 20px;
 }
-
-.improvement-suggestions ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.improvement-suggestions li {
-  padding: 5px;
-  border-bottom: 1px solid #dcdfe6;
-}
-
-.improvement-suggestions li:last-child {
-  border-bottom: none;
-}
-
-/* 已移除LLM错误元素的CSS样式 */
 
 .error-analysis {
   margin-bottom: 25px;
@@ -499,7 +460,55 @@ h4 {
   padding: 10px 0;
 }
 
-.evaluation-error {
-  margin-bottom: 20px;
+/* 美化后的总体评估和改进建议样式 */
+.evaluation-summary,
+.improvement-suggestions {
+  margin-top: 25px;
+}
+
+.summary-card,
+.suggestions-card {
+  margin-top: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
+  transition: all 0.3s ease;
+}
+
+.summary-card:hover,
+.suggestions-card:hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1) !important;
+  transform: translateY(-2px);
+}
+
+.summary-content {
+  display: flex;
+  align-items: flex-start;
+}
+
+.summary-icon,
+.suggestion-icon {
+  color: #409EFF;
+  margin-right: 10px;
+  margin-top: 3px;
+  flex-shrink: 0;
+}
+
+.suggestions-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.suggestion-item {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px dashed #eaeaea;
+}
+
+.suggestion-item:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
 }
 </style>
